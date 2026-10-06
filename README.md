@@ -4,7 +4,7 @@
 
 1. V. Sathwik - 25WU0102302
 2. Vinti Satya ROhan - 25WU0102300
-3. Y. Aditya sreekar - 25wu0102303
+3. Y. Aditya sreekar - 25WU0102303
 
 ## Project Description
 
