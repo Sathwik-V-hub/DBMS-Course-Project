@@ -293,6 +293,7 @@ HAVING COUNT(e.emp_id) >= 2;
 -- 9. VIEW EXECUTIONS
 -- ----------------------------------------------------
 SELECT * FROM employee_department_view;
+
 SELECT * FROM current_shift_roster;
 SELECT * FROM attendance_summary;
 SELECT * FROM leave_summary;
