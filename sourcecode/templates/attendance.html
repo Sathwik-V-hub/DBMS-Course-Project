@@ -167,7 +167,7 @@
                 <input type="text" id="attSearchInput" placeholder="Search employee, dept, date..." onkeyup="filterAttendanceTable()" style="padding: 0.4rem 0.75rem; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.82rem; outline: none;">
                 <div class="filter-pills" style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
                     <button type="button" class="btn btn-sm btn-secondary filter-btn active" data-status="all" onclick="filterByStatus('all')">All ({{ stats.total if stats else attendance_logs|length }})</button>
-                    <button type="button" class="btn btn-sm btn-success filter-btn" data-status="Present" onclick="filterByStatus('Present')"><i class="fa-solid fa-check"></i> Present ({{ stats.present if stats else 0 }})</button>
+                    <button type="button" class="btn btn-sm btn-success filter-btn" data-status="Present" onclick="filterByStatus('Present')"><i class="fa-solid fa-circle-check"></i> Present ({{ stats.present if stats else 0 }})</button>
                     <button type="button" class="btn btn-sm btn-warning filter-btn" data-status="Late" onclick="filterByStatus('Late')"><i class="fa-solid fa-clock"></i> Late ({{ stats.late if stats else 0 }})</button>
                     <button type="button" class="btn btn-sm btn-danger filter-btn" data-status="Absent" onclick="filterByStatus('Absent')"><i class="fa-solid fa-circle-xmark"></i> Absent ({{ stats.absent if stats else 0 }})</button>
                     <button type="button" class="btn btn-sm btn-info filter-btn" data-status="On Leave" onclick="filterByStatus('On Leave')"><i class="fa-solid fa-plane"></i> Leave ({{ stats.on_leave if stats else 0 }})</button>

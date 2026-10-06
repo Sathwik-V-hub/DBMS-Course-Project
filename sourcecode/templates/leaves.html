@@ -7,9 +7,47 @@
             <h2><i class="fa-solid fa-plane-departure"></i> Leave Requests & Approval Center</h2>
             <p class="subtitle">Supports ENUM Statuses (Pending, Approved, Rejected) with <code>CHECK (end_date >= start_date)</code></p>
         </div>
-        <button class="btn btn-primary" onclick="toggleModal('applyLeaveModal')">
-            <i class="fa-solid fa-paper-plane"></i> Apply for Leave
-        </button>
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="toggleModal('leaveTypeModal')">
+                <i class="fa-solid fa-tags"></i> Manage Leave Types
+            </button>
+            <button class="btn btn-primary" onclick="toggleModal('applyLeaveModal')">
+                <i class="fa-solid fa-paper-plane"></i> Apply for Leave
+            </button>
+        </div>
+    </div>
+
+    <!-- Leave Types Summary Card -->
+    <div class="glass-card mt-4">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-tags text-primary"></i> Available Leave Types</h3>
+            <button class="btn btn-sm btn-secondary" onclick="toggleModal('leaveTypeModal')">
+                <i class="fa-solid fa-plus"></i> Add Type
+            </button>
+        </div>
+        {% if leave_types %}
+        <div class="leave-types-grid">
+            {% for lt in leave_types %}
+            <div class="leave-type-chip">
+                <span class="chip-icon"><i class="fa-solid fa-tag"></i></span>
+                <div class="chip-info">
+                    <strong>{{ lt.type_name }}</strong>
+                    <span class="chip-meta">Max {{ lt.max_days }} days</span>
+                </div>
+                <form action="{{ url_for('leaves') }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this leave type?');">
+                    <input type="hidden" name="action" value="delete_type">
+                    <input type="hidden" name="type_id" value="{{ lt.type_id }}">
+                    <button type="submit" class="chip-delete" title="Delete"><i class="fa-solid fa-xmark"></i></button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="padding:1.5rem; text-align:center;">
+            <i class="fa-solid fa-tags fa-2x" style="color:#aaa;"></i>
+            <p style="color:#888; margin-top:0.5rem;">No leave types defined yet. <a href="#" onclick="toggleModal('leaveTypeModal'); return false;">Add one now &rarr;</a></p>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Leave Requests Card -->
@@ -122,4 +160,50 @@
         </form>
     </div>
 </div>
+
+<!-- Add Leave Type Modal -->
+<div id="leaveTypeModal" class="modal-backdrop">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-tags"></i> Add Leave Type</h3>
+            <button class="modal-close" onclick="toggleModal('leaveTypeModal')">&times;</button>
+        </div>
+        <form action="{{ url_for('leaves') }}" method="POST">
+            <input type="hidden" name="action" value="add_type">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Leave Type Name <span class="text-muted">(must be unique)</span></label>
+                    <input type="text" name="type_name" placeholder="e.g. Sick Leave" required>
+                </div>
+                <div class="form-group">
+                    <label>Maximum Days Allowed</label>
+                    <input type="number" name="max_days" min="1" max="365" value="10" required>
+                </div>
+                <div class="leave-type-presets">
+                    <p class="text-muted" style="font-size:0.8rem; margin-bottom:0.5rem;">Quick presets:</p>
+                    <div class="preset-buttons">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="fillPreset('Casual Leave', 12)">Casual (12d)</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="fillPreset('Sick Leave', 10)">Sick (10d)</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="fillPreset('Annual Leave', 20)">Annual (20d)</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="fillPreset('Emergency Leave', 5)">Emergency (5d)</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="fillPreset('Maternity Leave', 90)">Maternity (90d)</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="fillPreset('Paternity Leave', 15)">Paternity (15d)</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="toggleModal('leaveTypeModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Leave Type</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function fillPreset(name, days) {
+    const modal = document.getElementById('leaveTypeModal');
+    modal.querySelector('[name="type_name"]').value = name;
+    modal.querySelector('[name="max_days"]').value = days;
+}
+</script>
 {% endblock %}
