@@ -1,0 +1,441 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Role Switcher Banner -->
+    <div class="quick-actions-bar">
+        <h3><i class="fa-solid fa-graduation-cap text-primary"></i> MyCamu System Role: <strong>{{ metrics.role }}</strong></h3>
+        <div class="action-buttons">
+            <a href="{{ url_for('camu', role='ADMIN') }}" class="btn btn-sm {% if metrics.role == 'ADMIN' %}btn-primary{% else %}btn-secondary{% endif %}">Admin</a>
+            <a href="{{ url_for('camu', role='FACULTY') }}" class="btn btn-sm {% if metrics.role == 'FACULTY' %}btn-primary{% else %}btn-secondary{% endif %}">Faculty</a>
+            <a href="{{ url_for('camu', role='FINANCE') }}" class="btn btn-sm {% if metrics.role == 'FINANCE' %}btn-primary{% else %}btn-secondary{% endif %}">Finance</a>
+            <a href="{{ url_for('camu', role='STUDENT') }}" class="btn btn-sm {% if metrics.role == 'STUDENT' %}btn-primary{% else %}btn-secondary{% endif %}">Student</a>
+            <a href="{{ url_for('camu', role='PARENT') }}" class="btn btn-sm {% if metrics.role == 'PARENT' %}btn-primary{% else %}btn-secondary{% endif %}">Parent</a>
+        </div>
+    </div>
+
+    <!-- Top College Metrics -->
+    <div class="metrics-grid mt-4">
+        <div class="metric-card">
+            <div class="metric-icon bg-indigo">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">{{ metrics.students }}</span>
+                <span class="metric-label">Students</span>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon bg-emerald">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">{{ metrics.faculty }}</span>
+                <span class="metric-label">Faculty</span>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon bg-amber">
+                <i class="fa-solid fa-book"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">{{ metrics.courses }}</span>
+                <span class="metric-label">Courses</span>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon bg-rose">
+                <i class="fa-solid fa-indian-rupee-sign"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">₹{{ "{:,.2f}".format(metrics.revenue) }}</span>
+                <span class="metric-label">Fee Revenue</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. ADMIN PORTAL VIEW -->
+    {% if metrics.role == 'ADMIN' %}
+    <div class="glass-card mt-4">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-user-shield text-indigo"></i> Admin Portal &mdash; Student Directory</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Roll No</th>
+                        <th>Student Name</th>
+                        <th>Department</th>
+                        <th>Semester</th>
+                        <th>Parent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in admin_data.students %}
+                    <tr>
+                        <td><code>#{{ s.student_id }}</code></td>
+                        <td><strong>{{ s.roll_no }}</strong></td>
+                        <td>{{ s.student_name }}</td>
+                        <td><span class="badge badge-info">{{ s.dept_name }}</span></td>
+                        <td>Semester {{ s.semester }}</td>
+                        <td>{{ s.parent_name or 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dashboard-grid mt-4">
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-sitemap"></i> Departments</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Dept Name</th>
+                            <th>Building</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in admin_data.departments %}
+                        <tr>
+                            <td><strong>{{ d.dept_name }}</strong></td>
+                            <td>{{ d.building }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-book"></i> Courses</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Course Name</th>
+                            <th>Credits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in admin_data.courses %}
+                        <tr>
+                            <td><code>{{ c.course_code }}</code></td>
+                            <td><strong>{{ c.course_name }}</strong></td>
+                            <td>{{ c.credits }} Credits</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. FACULTY PORTAL VIEW -->
+    {% elif metrics.role == 'FACULTY' %}
+    <div class="dashboard-grid mt-4">
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-user-check text-emerald"></i> Mark Student Attendance</h3>
+            </div>
+            <form action="{{ url_for('add_attendance') }}" method="POST">
+                <div class="form-group">
+                    <label>Student</label>
+                    <select name="student_id" required>
+                        <option value="">-- Choose Student --</option>
+                        {% for s in students %}
+                            <option value="{{ s.student_id }}">{{ s.roll_no }} - {{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Course</label>
+                    <select name="course_id" required>
+                        <option value="">-- Choose Course --</option>
+                        {% for c in courses %}
+                            <option value="{{ c.course_id }}">{{ c.course_code }} - {{ c.course_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" name="att_date" value="{{ metrics.today }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" required>
+                        <option value="Present">Present</option>
+                        <option value="Absent">Absent</option>
+                        <option value="Late">Late</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-check"></i> Save Attendance</button>
+            </form>
+        </div>
+
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-award text-amber"></i> Record Exam Marks</h3>
+            </div>
+            <form action="{{ url_for('add_grade') }}" method="POST">
+                <div class="form-group">
+                    <label>Student</label>
+                    <select name="student_id" required>
+                        <option value="">-- Choose Student --</option>
+                        {% for s in students %}
+                            <option value="{{ s.student_id }}">{{ s.roll_no }} - {{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Course</label>
+                    <select name="course_id" required>
+                        <option value="">-- Choose Course --</option>
+                        {% for c in courses %}
+                            <option value="{{ c.course_id }}">{{ c.course_code }} - {{ c.course_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Exam Type</label>
+                    <select name="exam_type" required>
+                        <option value="Midterm">Midterm</option>
+                        <option value="Final">Final Exam</option>
+                        <option value="Assignment">Assignment</option>
+                        <option value="Quiz">Quiz</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Marks Obtained</label>
+                    <input type="number" step="0.5" name="marks_obtained" placeholder="e.g. 88.5" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-save"></i> Save Grade</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. FINANCE PORTAL VIEW -->
+    {% elif metrics.role == 'FINANCE' %}
+    <div class="dashboard-grid mt-4">
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-receipt text-rose"></i> Record Fee Transaction</h3>
+            </div>
+            <form action="{{ url_for('add_payment') }}" method="POST">
+                <div class="form-group">
+                    <label>Student</label>
+                    <select name="student_id" required>
+                        <option value="">-- Choose Student --</option>
+                        {% for s in students %}
+                            <option value="{{ s.student_id }}">{{ s.roll_no }} - {{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Amount (₹)</label>
+                    <input type="number" step="100" name="amount" placeholder="e.g. 45000" required>
+                </div>
+                <div class="form-group">
+                    <label>Payment Date</label>
+                    <input type="date" name="payment_date" value="{{ metrics.today }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Fee Category</label>
+                    <select name="fee_type" required>
+                        <option value="Tuition Fee">Tuition Fee</option>
+                        <option value="Exam Fee">Exam Fee</option>
+                        <option value="Library Fee">Library Fee</option>
+                        <option value="Hostel Fee">Hostel Fee</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Payment Status</label>
+                    <select name="payment_status" required>
+                        <option value="Paid">Paid</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-file-invoice"></i> Save Payment</button>
+            </form>
+        </div>
+
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-file-invoice-dollar"></i> Fee Payment Receipts</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Student</th>
+                            <th>Fee Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fp in finance_data.payments %}
+                        <tr>
+                            <td><code>{{ fp.roll_no }}</code></td>
+                            <td><strong>{{ fp.student_name }}</strong></td>
+                            <td>{{ fp.fee_type }}</td>
+                            <td><strong>₹{{ "{:,.2f}".format(fp.amount) }}</strong></td>
+                            <td>
+                                <span class="badge badge-{% if fp.payment_status == 'Paid' %}approved{% else %}pending{% endif %}">
+                                    {{ fp.payment_status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. STUDENT PORTAL VIEW -->
+    {% elif metrics.role == 'STUDENT' %}
+    <div class="glass-card mt-4">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-user-graduate text-primary"></i> Student Portal &mdash; {{ student_data.my_info.student_name if student_data.my_info else 'Student Profile' }}</h3>
+        </div>
+        <p class="subtitle">Roll No: <strong>{{ student_data.my_info.roll_no if student_data.my_info else 'N/A' }}</strong> &bull; Dept: {{ student_data.my_info.dept_name if student_data.my_info else 'N/A' }}</p>
+    </div>
+
+    <div class="dashboard-grid mt-4">
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-award"></i> My Academic Grades</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Exam</th>
+                            <th>Marks</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in student_data.grades %}
+                        <tr>
+                            <td><strong>{{ g.course_name }}</strong></td>
+                            <td>{{ g.exam_type }}</td>
+                            <td>{{ g.marks_obtained }} / {{ g.total_marks }}</td>
+                            <td><span class="badge badge-approved">{{ g.grade_letter }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> My Attendance Record</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Course</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in student_data.attendance %}
+                        <tr>
+                            <td><code>{{ a.att_date }}</code></td>
+                            <td>{{ a.course_name }}</td>
+                            <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. PARENT PORTAL VIEW -->
+    {% elif metrics.role == 'PARENT' %}
+    <div class="glass-card mt-4">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-people-roof text-rose"></i> Parent Portal &mdash; Child Progress Overview</h3>
+        </div>
+        <p class="subtitle">Child: <strong>{{ parent_data.child_info.child_name if parent_data.child_info else 'N/A' }}</strong> &bull; Roll No: {{ parent_data.child_info.roll_no if parent_data.child_info else 'N/A' }}</p>
+    </div>
+
+    <div class="dashboard-grid mt-4">
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-chart-line"></i> Academic Performance</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Course Name</th>
+                            <th>Exam</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in parent_data.grades %}
+                        <tr>
+                            <td><code>{{ g.course_code }}</code></td>
+                            <td><strong>{{ g.course_name }}</strong></td>
+                            <td>{{ g.exam_type }}</td>
+                            <td><span class="badge badge-approved">{{ g.grade_letter }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-wallet"></i> Fee Payment Receipts</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fee Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in parent_data.fees %}
+                        <tr>
+                            <td>{{ f.fee_type }}</td>
+                            <td><strong>₹{{ "{:,.2f}".format(f.amount) }}</strong></td>
+                            <td><span class="badge badge-{% if f.payment_status == 'Paid' %}approved{% else %}pending{% endif %}">{{ f.payment_status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

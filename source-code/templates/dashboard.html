@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Stat Metrics Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon bg-indigo">
+                <i class="fa-solid fa-sitemap"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">{{ metrics.departments if metrics and metrics.departments else 0 }}</span>
+                <span class="metric-label">Departments</span>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon bg-emerald">
+                <i class="fa-solid fa-user-group"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">{{ metrics.employees if metrics and metrics.employees else 0 }}</span>
+                <span class="metric-label">Employees</span>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon bg-amber">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">{{ metrics.shifts if metrics and metrics.shifts else 0 }}</span>
+                <span class="metric-label">Shift Definitions</span>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon bg-rose">
+                <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">{{ metrics.pending_leaves if metrics and metrics.pending_leaves else 0 }}</span>
+                <span class="metric-label">Pending Leaves</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Attendance Entry Widget on Dashboard -->
+    <div class="glass-card mb-4">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-bolt text-warning"></i> Quick Record Attendance Today ({{ metrics.today if metrics else '' }})</h3>
+        </div>
+        <form action="{{ url_for('attendance') }}" method="POST" class="quick-att-form">
+            <div class="quick-form-row">
+                <div class="form-group flex-1">
+                    <label>Employee</label>
+                    <select name="emp_id" required>
+                        <option value="">-- Select Employee --</option>
+                        {% for e in employees %}
+                            <option value="{{ e.emp_id }}">{{ e.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" name="att_date" value="{{ metrics.today if metrics else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Check In</label>
+                    <input type="time" name="check_in" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label>Check Out</label>
+                    <input type="time" name="check_out" value="17:00">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" required>
+                        <option value="Present">Present</option>
+                        <option value="Late">Late</option>
+                        <option value="Absent">Absent</option>
+                        <option value="On Leave">On Leave</option>
+                    </select>
+                </div>
+                <div class="form-group align-self-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-check"></i> Submit Attendance
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Dashboard Dual Section -->
+    <div class="dashboard-grid">
+        <!-- Recent Attendance Logs Table -->
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-clock"></i> Recent Attendance Records</h3>
+                <a href="{{ url_for('attendance') }}" class="card-link">View All &rarr;</a>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Date</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_attendance %}
+                            {% for row in recent_attendance %}
+                            <tr>
+                                <td><strong>{{ row.employee_name }}</strong></td>
+                                <td>{{ row.dept_name }}</td>
+                                <td>{{ row.att_date }}</td>
+                                <td>{{ row.check_in or '--:--' }}</td>
+                                <td>{{ row.check_out or '--:--' }}</td>
+                                <td>
+                                    <span class="badge badge-{{ row.status|lower|replace(' ', '-') }}">
+                                        {{ row.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="6" class="text-center text-muted">No attendance logs available.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Recent Leave Requests Table -->
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-plane-departure"></i> Recent Leave Applications</h3>
+                <a href="{{ url_for('leaves') }}" class="card-link">Manage Leaves &rarr;</a>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_leaves %}
+                            {% for row in recent_leaves %}
+                            <tr>
+                                <td><strong>{{ row.employee_name }}</strong></td>
+                                <td>{{ row.type_name }}</td>
+                                <td>{{ row.start_date }}</td>
+                                <td>{{ row.end_date }}</td>
+                                <td>
+                                    <span class="badge badge-{{ row.status|lower }}">
+                                        {{ row.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted">No leave requests found.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
