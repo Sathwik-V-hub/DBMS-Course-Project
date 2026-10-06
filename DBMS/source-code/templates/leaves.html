@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h2><i class="fa-solid fa-plane-departure"></i> Leave Requests & Approval Center</h2>
+            <p class="subtitle">Supports ENUM Statuses (Pending, Approved, Rejected) with <code>CHECK (end_date >= start_date)</code></p>
+        </div>
+        <button class="btn btn-primary" onclick="toggleModal('applyLeaveModal')">
+            <i class="fa-solid fa-paper-plane"></i> Apply for Leave
+        </button>
+    </div>
+
+    <!-- Leave Requests Card -->
+    <div class="glass-card mt-4">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Req ID</th>
+                        <th>Employee</th>
+                        <th>Leave Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Days</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if leave_requests %}
+                        {% for r in leave_requests %}
+                        <tr>
+                            <td><code>#{{ r.leave_id }}</code></td>
+                            <td><strong>{{ r.employee_name }}</strong></td>
+                            <td><span class="badge badge-info">{{ r.leave_type }}</span></td>
+                            <td><code>{{ r.start_date }}</code></td>
+                            <td><code>{{ r.end_date }}</code></td>
+                            <td><strong>{{ r.num_days }} Days</strong></td>
+                            <td>{{ r.reason or 'N/A' }}</td>
+                            <td>
+                                <span class="badge badge-{{ r.status|lower }}">
+                                    {{ r.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if r.status == 'Pending' %}
+                                <form action="{{ url_for('leaves') }}" method="POST" style="display:inline-block;">
+                                    <input type="hidden" name="leave_id" value="{{ r.leave_id }}">
+                                    <input type="hidden" name="action" value="Approved">
+                                    <button type="submit" class="btn btn-sm btn-success"><i class="fa-solid fa-check"></i> Approve</button>
+                                </form>
+                                <form action="{{ url_for('leaves') }}" method="POST" style="display:inline-block;">
+                                    <input type="hidden" name="leave_id" value="{{ r.leave_id }}">
+                                    <input type="hidden" name="action" value="Rejected">
+                                    <button type="submit" class="btn btn-sm btn-danger"><i class="fa-solid fa-xmark"></i> Reject</button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">Reviewed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="9" class="text-center text-muted">No leave requests available.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Apply Leave Modal -->
+<div id="applyLeaveModal" class="modal-backdrop">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-paper-plane"></i> Leave Application Form</h3>
+            <button class="modal-close" onclick="toggleModal('applyLeaveModal')">&times;</button>
+        </div>
+        <form action="{{ url_for('leaves') }}" method="POST">
+            <input type="hidden" name="action" value="apply">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Employee</label>
+                    <select name="emp_id" required>
+                        <option value="">Select Employee...</option>
+                        {% for e in employees %}
+                            <option value="{{ e.emp_id }}">{{ e.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Leave Category</label>
+                    <select name="type_id" required>
+                        <option value="">Select Leave Type...</option>
+                        {% for lt in leave_types %}
+                            <option value="{{ lt.type_id }}">{{ lt.type_name }} (Max {{ lt.max_days }} days)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" name="start_date" value="2026-10-10" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date (Must be >= Start Date)</label>
+                    <input type="date" name="end_date" value="2026-10-12" required>
+                </div>
+                <div class="form-group">
+                    <label>Reason for Leave</label>
+                    <textarea name="reason" rows="3" placeholder="Specify reason..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="toggleModal('applyLeaveModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Submit Application</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
