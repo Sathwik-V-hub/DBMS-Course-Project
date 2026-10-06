@@ -148,11 +148,16 @@ def init_sqlite_fallback(conn):
     (5, 5, 2, '2026-10-05');
 
     INSERT INTO attendance (att_id, emp_id, att_date, check_in, check_out, status) VALUES
-    (1, 1, '2026-10-05', '08:55:00', '17:05:00', 'Present'),
-    (2, 2, '2026-10-05', '09:20:00', '17:00:00', 'Late'),
-    (3, 3, '2026-10-05', '14:00:00', '22:00:00', 'Present'),
-    (4, 4, '2026-10-05', NULL, NULL, 'Absent'),
-    (5, 5, '2026-10-05', NULL, NULL, 'On Leave');
+    (1, 1, '2026-10-06', '08:50:00', '17:05:00', 'Present'),
+    (2, 2, '2026-10-06', '09:42:00', '17:15:00', 'Late'),
+    (3, 3, '2026-10-06', '08:58:00', '17:00:00', 'Present'),
+    (4, 4, '2026-10-06', NULL, NULL, 'Absent'),
+    (5, 5, '2026-10-06', NULL, NULL, 'On Leave'),
+    (6, 1, '2026-10-05', '08:55:00', '17:05:00', 'Present'),
+    (7, 2, '2026-10-05', '09:20:00', '17:00:00', 'Late'),
+    (8, 3, '2026-10-05', '14:00:00', '22:00:00', 'Present'),
+    (9, 4, '2026-10-05', NULL, NULL, 'Absent'),
+    (10, 5, '2026-10-05', NULL, NULL, 'On Leave');
 
     INSERT INTO leave_type (type_id, type_name, max_days) VALUES
     (1, 'Casual Leave', 12),
@@ -429,11 +434,20 @@ def attendance():
             check_out = '17:00:00'
 
         try:
-            run_query("""
-                INSERT INTO attendance (emp_id, att_date, check_in, check_out, status)
-                VALUES (%s, %s, %s, %s, %s);
-            """, (emp_id, att_date, check_in, check_out, status), is_write=True)
-            flash(f"Attendance recorded successfully for {att_date} as '{status}'!", "success")
+            # Determine the engine to pick the right upsert syntax
+            _, engine = get_db_connection()
+            if engine == 'mysql':
+                run_query("""
+                    INSERT INTO attendance (emp_id, att_date, check_in, check_out, status)
+                    VALUES (%s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE check_in=VALUES(check_in), check_out=VALUES(check_out), status=VALUES(status);
+                """, (emp_id, att_date, check_in, check_out, status), is_write=True)
+            else:
+                run_query("""
+                    INSERT OR REPLACE INTO attendance (emp_id, att_date, check_in, check_out, status)
+                    VALUES (?, ?, ?, ?, ?);
+                """, (emp_id, att_date, check_in, check_out, status), is_write=True)
+            flash(f"Attendance recorded for {att_date} as '{status}'!", "success")
         except Exception as e:
             flash(f"Recording failed: {str(e)}", "danger")
 
@@ -451,7 +465,14 @@ def attendance():
         FROM employee e 
         JOIN department d ON e.dept_id = d.dept_id;
     """)
-    return render_template('attendance.html', attendance_logs=att_list, employees=emp_list, today=today_str)
+    stats = {
+        'total': len(att_list),
+        'present': sum(1 for a in att_list if a.get('status') == 'Present'),
+        'late': sum(1 for a in att_list if a.get('status') == 'Late'),
+        'absent': sum(1 for a in att_list if a.get('status') == 'Absent'),
+        'on_leave': sum(1 for a in att_list if a.get('status') == 'On Leave')
+    }
+    return render_template('attendance.html', attendance_logs=att_list, employees=emp_list, today=today_str, stats=stats)
 
 @app.route('/leaves', methods=['GET', 'POST'])
 def leaves():
@@ -461,11 +482,37 @@ def leaves():
         if action == 'apply':
             emp_id = request.form.get('emp_id')
             type_id = request.form.get('type_id')
+            leave_type_input = (request.form.get('leave_type') or '').strip()
             start_date = request.form.get('start_date')
             end_date = request.form.get('end_date')
             reason = request.form.get('reason', '').strip()
 
             try:
+                if not type_id and leave_type_input:
+                    # Look for existing leave type with this name (case-insensitive)
+                    existing, _ = run_query(
+                        "SELECT type_id FROM leave_type WHERE LOWER(type_name) = LOWER(%s);",
+                        (leave_type_input,)
+                    )
+                    if existing:
+                        type_id = existing[0]['type_id']
+                    else:
+                        # Auto-create the leave type with 15 max days
+                        run_query(
+                            "INSERT INTO leave_type (type_name, max_days) VALUES (%s, %s);",
+                            (leave_type_input, 15),
+                            is_write=True
+                        )
+                        new_type, _ = run_query(
+                            "SELECT type_id FROM leave_type WHERE LOWER(type_name) = LOWER(%s);",
+                            (leave_type_input,)
+                        )
+                        if new_type:
+                            type_id = new_type[0]['type_id']
+
+                if not type_id:
+                    raise Exception("Please specify a valid leave category.")
+
                 run_query("""
                     INSERT INTO leave_request (emp_id, type_id, start_date, end_date, reason, status)
                     VALUES (%s, %s, %s, %s, %s, 'Pending');
@@ -482,25 +529,47 @@ def leaves():
             except Exception as e:
                 flash(f"Failed to update leave status: {str(e)}", "danger")
 
+        elif action == 'add_type':
+            type_name = request.form.get('type_name', '').strip()
+            max_days = request.form.get('max_days', '10')
+            try:
+                run_query("INSERT INTO leave_type (type_name, max_days) VALUES (%s, %s);",
+                          (type_name, int(max_days)), is_write=True)
+                flash(f"Leave type '{type_name}' added successfully!", "success")
+            except Exception as e:
+                flash(f"Failed to add leave type: {str(e)}", "danger")
+
+        elif action == 'delete_type':
+            type_id = request.form.get('type_id')
+            try:
+                run_query("DELETE FROM leave_type WHERE type_id = %s;", (type_id,), is_write=True)
+                flash("Leave type deleted successfully!", "success")
+            except Exception as e:
+                flash(f"Cannot delete leave type (may have existing requests): {str(e)}", "danger")
+
         return redirect(url_for('leaves'))
 
-    leave_requests, _ = run_query("""
-        SELECT lr.leave_id, e.name AS employee_name, lt.type_name AS leave_type,
-               lr.start_date, lr.end_date, (DATEDIFF(lr.end_date, lr.start_date) + 1) AS num_days,
-               lr.reason, lr.status
-        FROM leave_request lr
-        JOIN employee e ON lr.emp_id = e.emp_id
-        JOIN leave_type lt ON lr.type_id = lt.type_id
-        ORDER BY lr.leave_id DESC;
-    """) if get_db_connection()[1] == "mysql" else run_query("""
-        SELECT lr.leave_id, e.name AS employee_name, lt.type_name AS leave_type,
-               lr.start_date, lr.end_date, (julianday(lr.end_date) - julianday(lr.start_date) + 1) AS num_days,
-               lr.reason, lr.status
-        FROM leave_request lr
-        JOIN employee e ON lr.emp_id = e.emp_id
-        JOIN leave_type lt ON lr.type_id = lt.type_id
-        ORDER BY lr.leave_id DESC;
-    """)
+    _, engine = get_db_connection()
+    if engine == 'mysql':
+        leave_requests, _ = run_query("""
+            SELECT lr.leave_id, e.name AS employee_name, lt.type_name AS leave_type,
+                   lr.start_date, lr.end_date, (DATEDIFF(lr.end_date, lr.start_date) + 1) AS num_days,
+                   lr.reason, lr.status
+            FROM leave_request lr
+            JOIN employee e ON lr.emp_id = e.emp_id
+            JOIN leave_type lt ON lr.type_id = lt.type_id
+            ORDER BY lr.leave_id DESC;
+        """)
+    else:
+        leave_requests, _ = run_query("""
+            SELECT lr.leave_id, e.name AS employee_name, lt.type_name AS leave_type,
+                   lr.start_date, lr.end_date, CAST(julianday(lr.end_date) - julianday(lr.start_date) + 1 AS INTEGER) AS num_days,
+                   lr.reason, lr.status
+            FROM leave_request lr
+            JOIN employee e ON lr.emp_id = e.emp_id
+            JOIN leave_type lt ON lr.type_id = lt.type_id
+            ORDER BY lr.leave_id DESC;
+        """)
 
     leave_types, _ = run_query("SELECT type_id, type_name, max_days FROM leave_type;")
     emp_list, _ = run_query("SELECT emp_id, name FROM employee;")
@@ -508,6 +577,8 @@ def leaves():
 
 @app.route('/reports')
 def reports():
+    _, engine = get_db_connection()
+
     q1, _ = run_query("""
         SELECT e.name AS employee, d.dept_name AS department, s.shift_name AS shift, s.start_time, s.end_time, sa.work_date
         FROM shift_assignment sa
@@ -519,23 +590,26 @@ def reports():
 
     q2, _ = run_query("SELECT status, COUNT(*) AS total_days FROM attendance GROUP BY status;")
 
-    q3_sql = """
-        SELECT e.name AS employee, d.dept_name AS department,
-               SUM(DATEDIFF(lr.end_date, lr.start_date) + 1) AS approved_leave_days
-        FROM leave_request lr
-        JOIN employee e ON lr.emp_id = e.emp_id
-        JOIN department d ON e.dept_id = d.dept_id
-        WHERE lr.status = 'Approved'
-        GROUP BY e.emp_id, e.name, d.dept_name;
-    """ if get_db_connection()[1] == "mysql" else """
-        SELECT e.name AS employee, d.dept_name AS department,
-               SUM(julianday(lr.end_date) - julianday(lr.start_date) + 1) AS approved_leave_days
-        FROM leave_request lr
-        JOIN employee e ON lr.emp_id = e.emp_id
-        JOIN department d ON e.dept_id = d.dept_id
-        WHERE lr.status = 'Approved'
-        GROUP BY e.emp_id, e.name, d.dept_name;
-    """
+    if engine == 'mysql':
+        q3_sql = """
+            SELECT e.name AS employee, d.dept_name AS department,
+                   SUM(DATEDIFF(lr.end_date, lr.start_date) + 1) AS approved_leave_days
+            FROM leave_request lr
+            JOIN employee e ON lr.emp_id = e.emp_id
+            JOIN department d ON e.dept_id = d.dept_id
+            WHERE lr.status = 'Approved'
+            GROUP BY e.emp_id, e.name, d.dept_name;
+        """
+    else:
+        q3_sql = """
+            SELECT e.name AS employee, d.dept_name AS department,
+                   CAST(SUM(julianday(lr.end_date) - julianday(lr.start_date) + 1) AS INTEGER) AS approved_leave_days
+            FROM leave_request lr
+            JOIN employee e ON lr.emp_id = e.emp_id
+            JOIN department d ON e.dept_id = d.dept_id
+            WHERE lr.status = 'Approved'
+            GROUP BY e.emp_id, e.name, d.dept_name;
+        """
     q3, _ = run_query(q3_sql)
 
     q4, _ = run_query("""

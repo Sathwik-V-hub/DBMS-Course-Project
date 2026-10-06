@@ -210,11 +210,16 @@ INSERT INTO shift_assignment (assign_id, emp_id, shift_id, work_date) VALUES
 (5, 5, 2, '2026-10-05');
 
 INSERT INTO attendance (att_id, emp_id, att_date, check_in, check_out, status) VALUES
-(1, 1, '2026-10-05', '08:55:00', '17:05:00', 'Present'),
-(2, 2, '2026-10-05', '09:20:00', '17:00:00', 'Late'),
-(3, 3, '2026-10-05', '14:00:00', '22:00:00', 'Present'),
-(4, 4, '2026-10-05', NULL, NULL, 'Absent'),
-(5, 5, '2026-10-05', NULL, NULL, 'On Leave');
+(1, 1, '2026-10-06', '08:50:00', '17:05:00', 'Present'),
+(2, 2, '2026-10-06', '09:42:00', '17:15:00', 'Late'),
+(3, 3, '2026-10-06', '08:58:00', '17:00:00', 'Present'),
+(4, 4, '2026-10-06', NULL, NULL, 'Absent'),
+(5, 5, '2026-10-06', NULL, NULL, 'On Leave'),
+(6, 1, '2026-10-05', '08:55:00', '17:05:00', 'Present'),
+(7, 2, '2026-10-05', '09:20:00', '17:00:00', 'Late'),
+(8, 3, '2026-10-05', '14:00:00', '22:00:00', 'Present'),
+(9, 4, '2026-10-05', NULL, NULL, 'Absent'),
+(10, 5, '2026-10-05', NULL, NULL, 'On Leave');
 
 INSERT INTO leave_type (type_id, type_name, max_days) VALUES
 (1, 'Casual Leave', 12),

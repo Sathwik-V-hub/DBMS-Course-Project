@@ -93,12 +93,14 @@
                 </div>
                 <div class="form-group">
                     <label>Leave Category</label>
-                    <select name="type_id" required>
-                        <option value="">Select Leave Type...</option>
-                        {% for lt in leave_types %}
-                            <option value="{{ lt.type_id }}">{{ lt.type_name }} (Max {{ lt.max_days }} days)</option>
-                        {% endfor %}
-                    </select>
+                    <input type="text" id="leaveCategoryInput" name="leave_type" placeholder="Type leave category (e.g. Sick Leave, Casual Leave, Vacation...)" required autocomplete="off">
+                    <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem;">
+                        <span style="font-size:0.75rem; color:var(--text-muted); align-self:center;">Quick fill:</span>
+                        <button type="button" class="badge badge-info" style="cursor:pointer; border:1px solid #bfdbfe; background:#eff6ff;" onclick="document.getElementById('leaveCategoryInput').value='Casual Leave'">Casual Leave</button>
+                        <button type="button" class="badge badge-info" style="cursor:pointer; border:1px solid #bfdbfe; background:#eff6ff;" onclick="document.getElementById('leaveCategoryInput').value='Sick Leave'">Sick Leave</button>
+                        <button type="button" class="badge badge-info" style="cursor:pointer; border:1px solid #bfdbfe; background:#eff6ff;" onclick="document.getElementById('leaveCategoryInput').value='Annual Leave'">Annual Leave</button>
+                        <button type="button" class="badge badge-info" style="cursor:pointer; border:1px solid #bfdbfe; background:#eff6ff;" onclick="document.getElementById('leaveCategoryInput').value='Emergency Leave'">Emergency Leave</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Start Date</label>
