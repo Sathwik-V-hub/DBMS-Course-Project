@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h2><i class="fa-solid fa-calendar-days"></i> AI Shift Engine &amp; Roster Manager</h2>
+            <p class="subtitle">AI auto-assigns rotational shifts &bull; User / Manager can change or override any shift</p>
+        </div>
+        <div class="action-buttons">
+            <form action="{{ url_for('auto_assign_shifts') }}" method="POST" style="display:inline-flex; gap:0.5rem; align-items:center;">
+                <input type="date" name="target_date" value="{{ today }}" class="row-date-picker" required>
+                <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-robot"></i> AI Auto-Assign Shifts
+                </button>
+            </form>
+            <button class="btn btn-secondary" onclick="toggleModal('addShiftModal')">
+                <i class="fa-solid fa-plus"></i> New Shift Definition
+            </button>
+            <button class="btn btn-primary" onclick="toggleModal('assignShiftModal')">
+                <i class="fa-solid fa-calendar-plus"></i> Manual Assign
+            </button>
+        </div>
+    </div>
+
+    <!-- Shifts Section -->
+    <div class="dashboard-grid mt-4">
+        <!-- Shift Definitions Card -->
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-clock text-primary"></i> Shift Definitions</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Shift Name</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if shifts %}
+                            {% for s in shifts %}
+                            <tr>
+                                <td><strong>{{ s.shift_name }}</strong></td>
+                                <td><code>{{ s.start_time }}</code></td>
+                                <td><code>{{ s.end_time }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" class="text-center text-muted">No shifts defined.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Shift Roster Card with User Change Shift Selector -->
+        <div class="glass-card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-clipboard-user text-emerald"></i> Shift Assignments Roster (User Changeable)</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Current Shift</th>
+                            <th>Work Date</th>
+                            <th>User Change Shift</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if roster %}
+                            {% for r in roster %}
+                            <tr>
+                                <td><strong>{{ r.employee }}</strong></td>
+                                <td>{{ r.department }}</td>
+                                <td><span class="badge badge-info">{{ r.shift }}</span></td>
+                                <td><code>{{ r.work_date }}</code></td>
+                                <td>
+                                    <!-- User Manual Shift Change Form -->
+                                    <form action="{{ url_for('shifts') }}" method="POST" class="d-flex" style="display:flex; gap:0.4rem; align-items:center;">
+                                        <input type="hidden" name="action" value="change_shift">
+                                        <input type="hidden" name="assign_id" value="{{ r.assign_id }}">
+                                        <select name="shift_id" class="row-date-picker" required>
+                                            {% for s in shifts %}
+                                                <option value="{{ s.shift_id }}" {% if s.shift_name == r.shift %}selected{% endif %}>
+                                                    {{ s.shift_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i class="fa-solid fa-arrows-rotate"></i> Change
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted">No shift assignments logged. Click "AI Auto-Assign" to generate shifts!</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Shift Modal -->
+<div id="addShiftModal" class="modal-backdrop">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-clock"></i> Define New Shift</h3>
+            <button class="modal-close" onclick="toggleModal('addShiftModal')">&times;</button>
+        </div>
+        <form action="{{ url_for('shifts') }}" method="POST">
+            <input type="hidden" name="action" value="add_shift">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Shift Name (Unique)</label>
+                    <input type="text" name="shift_name" placeholder="e.g. Flexible Shift" required>
+                </div>
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input type="time" name="start_time" value="09:00" required>
+                </div>
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time" name="end_time" value="17:00" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="toggleModal('addShiftModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Create Shift</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Assign Shift Modal -->
+<div id="assignShiftModal" class="modal-backdrop">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-calendar-plus"></i> Assign Shift to Employee</h3>
+            <button class="modal-close" onclick="toggleModal('assignShiftModal')">&times;</button>
+        </div>
+        <form action="{{ url_for('shifts') }}" method="POST">
+            <input type="hidden" name="action" value="assign_shift">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Employee</label>
+                    <select name="emp_id" required>
+                        <option value="">Select Employee...</option>
+                        {% for e in employees %}
+                            <option value="{{ e.emp_id }}">{{ e.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Shift Type</label>
+                    <select name="shift_id" required>
+                        <option value="">Select Shift...</option>
+                        {% for s in shifts %}
+                            <option value="{{ s.shift_id }}">{{ s.shift_name }} ({{ s.start_time }} - {{ s.end_time }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Work Date</label>
+                    <input type="date" name="work_date" value="{{ today }}" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="toggleModal('assignShiftModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Assignment</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
