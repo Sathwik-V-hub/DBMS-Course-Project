@@ -3,8 +3,8 @@
 ## Team Members
 
 1. V. Sathwik - 25WU0102302
-2. [Member 2 Name] - [Roll Number]
-3. [Member 3 Name] - [Roll Number]
+2. Vinti Satya ROhan - 25WU0102300
+3. Y. Aditya sreekar - 25wu0102303
 
 ## Project Description
 
