@@ -64,3 +64,5 @@ SELECT * FROM employee_department_view;
 SELECT * FROM current_shift_roster;
 SELECT * FROM attendance_summary;
 SELECT * FROM leave_summary;
+SELECT * FROM admin_activity_log_view;
+SELECT * FROM system_admin_overview;

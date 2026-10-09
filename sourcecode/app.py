@@ -30,10 +30,8 @@ def get_db_connection():
 def init_sqlite_fallback(conn):
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='department';")
-    if cursor.fetchone():
-        return
-
-    cursor.executescript("""
+    if not cursor.fetchone():
+        cursor.executescript("""
     CREATE TABLE department (
         dept_id INTEGER PRIMARY KEY AUTOINCREMENT,
         dept_name TEXT NOT NULL UNIQUE,
@@ -98,6 +96,29 @@ def init_sqlite_fallback(conn):
         FOREIGN KEY (type_id) REFERENCES leave_type(type_id)
     );
 
+    CREATE TABLE IF NOT EXISTS admin_user (
+        admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        role TEXT NOT NULL DEFAULT 'HR Admin',
+        is_active INTEGER NOT NULL DEFAULT 1,
+        last_login TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS admin_audit_log (
+        log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        admin_id INTEGER NOT NULL,
+        action_type TEXT NOT NULL,
+        target_table TEXT NOT NULL,
+        target_id INTEGER,
+        description TEXT,
+        action_timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (admin_id) REFERENCES admin_user(admin_id) ON DELETE CASCADE
+    );
+
     -- Views
     CREATE VIEW IF NOT EXISTS employee_department_view AS
     SELECT e.emp_id, e.name AS employee_name, e.email, e.phone, d.dept_name AS department, d.location
@@ -119,6 +140,20 @@ def init_sqlite_fallback(conn):
     FROM leave_request lr
     JOIN employee e ON lr.emp_id = e.emp_id
     JOIN leave_type lt ON lr.type_id = lt.type_id;
+
+    CREATE VIEW IF NOT EXISTS admin_activity_log_view AS
+    SELECT al.log_id, au.username AS admin_user, au.full_name AS admin_name, au.role AS admin_role,
+           al.action_type, al.target_table, al.target_id, al.description, al.action_timestamp
+    FROM admin_audit_log al
+    JOIN admin_user au ON al.admin_id = au.admin_id;
+
+    CREATE VIEW IF NOT EXISTS system_admin_overview AS
+    SELECT (SELECT COUNT(*) FROM employee) AS total_employees,
+           (SELECT COUNT(*) FROM department) AS total_departments,
+           (SELECT COUNT(*) FROM shift) AS total_shifts,
+           (SELECT COUNT(*) FROM leave_request WHERE status = 'Pending') AS pending_leaves,
+           (SELECT COUNT(*) FROM attendance WHERE status = 'Present') AS total_present_records,
+           (SELECT COUNT(*) FROM admin_user WHERE is_active = 1) AS active_admins;
 
     -- Seed Data
     INSERT INTO department (dept_id, dept_name, location) VALUES
@@ -171,8 +206,74 @@ def init_sqlite_fallback(conn):
     (3, 1, 3, '2026-10-15', '2026-10-20', 'Vacation leave', 'Pending'),
     (4, 4, 1, '2026-10-05', '2026-10-05', 'Personal urgent work', 'Approved'),
     (5, 3, 4, '2026-10-02', '2026-10-03', 'Emergency work', 'Rejected');
+
+    INSERT INTO admin_user (admin_id, username, password_hash, full_name, email, role, is_active) VALUES
+    (1, 'admin', 'admin123', 'System Administrator', 'admin@attendx.com', 'Super Admin', 1),
+    (2, 'priya_hr', 'hrpass123', 'Priya Sharma', 'priya.hr@attendx.com', 'HR Admin', 1),
+    (3, 'karthik_ops', 'opspass123', 'Karthik Verma', 'karthik.ops@attendx.com', 'Operations Admin', 1);
+
+    INSERT INTO admin_audit_log (log_id, admin_id, action_type, target_table, target_id, description) VALUES
+    (1, 1, 'SYSTEM_INIT', 'database', NULL, 'Database schema initialized with 3NF structure and seed data'),
+    (2, 2, 'APPROVE_LEAVE', 'leave_request', 1, 'Approved Casual Leave for Lakshmi Devi (2026-10-05 to 2026-10-07)'),
+    (3, 3, 'ASSIGN_SHIFT', 'shift_assignment', 1, 'Assigned Morning Shift to Asha Reddy for 2026-10-05'),
+    (4, 2, 'APPROVE_LEAVE', 'leave_request', 4, 'Approved Casual Leave for Imran Khan'),
+    (5, 1, 'POLICY_UPDATE', 'leave_type', 3, 'Updated Annual Leave allowance policy');
     """)
     conn.commit()
+
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='admin_audit_log';")
+    if not cursor.fetchone():
+        cursor.executescript("""
+        CREATE TABLE IF NOT EXISTS admin_user (
+            admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            full_name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            role TEXT NOT NULL DEFAULT 'HR Admin',
+            is_active INTEGER NOT NULL DEFAULT 1,
+            last_login TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS admin_audit_log (
+            log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            admin_id INTEGER NOT NULL,
+            action_type TEXT NOT NULL,
+            target_table TEXT NOT NULL,
+            target_id INTEGER,
+            description TEXT,
+            action_timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (admin_id) REFERENCES admin_user(admin_id) ON DELETE CASCADE
+        );
+
+        CREATE VIEW IF NOT EXISTS admin_activity_log_view AS
+        SELECT al.log_id, au.username AS admin_user, au.full_name AS admin_name, au.role AS admin_role,
+               al.action_type, al.target_table, al.target_id, al.description, al.action_timestamp
+        FROM admin_audit_log al
+        JOIN admin_user au ON al.admin_id = au.admin_id;
+
+        CREATE VIEW IF NOT EXISTS system_admin_overview AS
+        SELECT (SELECT COUNT(*) FROM employee) AS total_employees,
+               (SELECT COUNT(*) FROM department) AS total_departments,
+               (SELECT COUNT(*) FROM shift) AS total_shifts,
+               (SELECT COUNT(*) FROM leave_request WHERE status = 'Pending') AS pending_leaves,
+               (SELECT COUNT(*) FROM attendance WHERE status = 'Present') AS total_present_records,
+               (SELECT COUNT(*) FROM admin_user WHERE is_active = 1) AS active_admins;
+
+        INSERT OR IGNORE INTO admin_user (admin_id, username, password_hash, full_name, email, role, is_active) VALUES
+        (1, 'admin', 'admin123', 'System Administrator', 'admin@attendx.com', 'Super Admin', 1),
+        (2, 'priya_hr', 'hrpass123', 'Priya Sharma', 'priya.hr@attendx.com', 'HR Admin', 1),
+        (3, 'karthik_ops', 'opspass123', 'Karthik Verma', 'karthik.ops@attendx.com', 'Operations Admin', 1);
+
+        INSERT OR IGNORE INTO admin_audit_log (log_id, admin_id, action_type, target_table, target_id, description) VALUES
+        (1, 1, 'SYSTEM_INIT', 'database', NULL, 'Database schema initialized with 3NF structure and seed data'),
+        (2, 2, 'APPROVE_LEAVE', 'leave_request', 1, 'Approved Casual Leave for Lakshmi Devi (2026-10-05 to 2026-10-07)'),
+        (3, 3, 'ASSIGN_SHIFT', 'shift_assignment', 1, 'Assigned Morning Shift to Asha Reddy for 2026-10-05'),
+        (4, 2, 'APPROVE_LEAVE', 'leave_request', 4, 'Approved Casual Leave for Imran Khan'),
+        (5, 1, 'POLICY_UPDATE', 'leave_type', 3, 'Updated Annual Leave allowance policy');
+        """)
+        conn.commit()
 
 def run_query(query, params=(), fetch_all=True, is_write=False):
     conn, engine = get_db_connection()
@@ -208,6 +309,15 @@ def run_query(query, params=(), fetch_all=True, is_write=False):
             conn.close()
         raise err
 
+def log_admin_action(admin_id=1, action_type="ADMIN_ACTION", target_table="", target_id=None, description=""):
+    try:
+        run_query("""
+            INSERT INTO admin_audit_log (admin_id, action_type, target_table, target_id, description)
+            VALUES (%s, %s, %s, %s, %s);
+        """, (admin_id, action_type, target_table, target_id, description), is_write=True)
+    except Exception:
+        pass
+
 # ----------------------------------------------------
 # ROUTES & CONTROLLERS
 # ----------------------------------------------------
@@ -220,6 +330,7 @@ def dashboard():
         emp_count, _ = run_query("SELECT COUNT(*) AS total FROM employee;", fetch_all=False)
         shift_count, _ = run_query("SELECT COUNT(*) AS total FROM shift;", fetch_all=False)
         pending_leaves, _ = run_query("SELECT COUNT(*) AS total FROM leave_request WHERE status = 'Pending';", fetch_all=False)
+        audit_count, _ = run_query("SELECT COUNT(*) AS total FROM admin_audit_log;", fetch_all=False)
 
         recent_attendance, _ = run_query("""
             SELECT e.name AS employee_name, d.dept_name, a.att_date, a.check_in, a.check_out, a.status
@@ -237,6 +348,13 @@ def dashboard():
             ORDER BY lr.leave_id DESC LIMIT 5;
         """)
 
+        recent_audit, _ = run_query("""
+            SELECT al.log_id, au.username, au.role, al.action_type, al.target_table, al.description, al.action_timestamp
+            FROM admin_audit_log al
+            JOIN admin_user au ON al.admin_id = au.admin_id
+            ORDER BY al.log_id DESC LIMIT 5;
+        """)
+
         employees_list, _ = run_query("""
             SELECT e.emp_id, e.name, d.dept_name 
             FROM employee e 
@@ -248,14 +366,15 @@ def dashboard():
             'employees': emp_count['total'] if emp_count else 0,
             'shifts': shift_count['total'] if shift_count else 0,
             'pending_leaves': pending_leaves['total'] if pending_leaves else 0,
+            'audit_count': audit_count['total'] if audit_count else 0,
             'engine': engine,
             'today': today_str
         }
 
-        return render_template('dashboard.html', metrics=metrics, recent_attendance=recent_attendance, recent_leaves=recent_leaves, employees=employees_list)
+        return render_template('dashboard.html', metrics=metrics, recent_attendance=recent_attendance, recent_leaves=recent_leaves, recent_audit=recent_audit, employees=employees_list)
     except Exception as e:
         flash(f"Database Error: {str(e)}", "danger")
-        return render_template('dashboard.html', metrics={'today': today_str}, recent_attendance=[], recent_leaves=[], employees=[])
+        return render_template('dashboard.html', metrics={'today': today_str}, recent_attendance=[], recent_leaves=[], recent_audit=[], employees=[])
 
 @app.route('/departments', methods=['GET', 'POST'])
 def departments():
@@ -639,6 +758,23 @@ def db_settings():
         flash(f"Failed to connect to MySQL ({str(e)}). Using local demo engine.", "warning")
 
     return redirect(url_for('dashboard'))
+
+@app.route('/audit_logs')
+def audit_logs():
+    logs, _ = run_query("""
+        SELECT al.log_id, au.username, au.full_name, au.role, al.action_type, al.target_table, al.target_id, al.description, al.action_timestamp
+        FROM admin_audit_log al
+        JOIN admin_user au ON al.admin_id = au.admin_id
+        ORDER BY al.log_id DESC;
+    """)
+    admins, _ = run_query("SELECT * FROM admin_user;")
+    return render_template('audit_logs.html', logs=logs, admins=admins)
+
+@app.route('/portal')
+@app.route('/admin')
+def admin_portal():
+    from flask import send_from_directory
+    return send_from_directory(os.path.dirname(__file__), 'index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

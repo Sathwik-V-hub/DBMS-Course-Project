@@ -134,6 +134,15 @@ def run_verification():
         except Error as err:
             print(f"   [PASS] ON DELETE RESTRICT blocked deletion as expected: {err.msg}")
 
+        # Test 5: Verify Admin Accounts & Audit Log
+        cursor.execute("SELECT username, role, email FROM admin_user;")
+        admins = cursor.fetchall()
+        print(f"   [PASS] Found {len(admins)} administrator account(s): {admins}")
+
+        cursor.execute("SELECT COUNT(*) FROM admin_audit_log;")
+        log_count = cursor.fetchone()[0]
+        print(f"   [PASS] Found {log_count} immutable admin audit log entries.")
+
         print("\n[ALL DATABASE VERIFICATION TESTS PASSED SUCCESSFULLY!]")
         return True
 

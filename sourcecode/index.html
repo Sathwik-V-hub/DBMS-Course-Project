@@ -3,282 +3,633 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AttendX Pro - Employee Attendance, Shift & Leave Management System</title>
+    <title>AttendX Pro - Enterprise DBMS Admin Interface</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- All-In-One Embedded Styles -->
     <style>
         :root {
-            --bg-main: #f8fafc;
+            --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --bg-sidebar: #ffffff;
-            --border-color: #e2e8f0;
-            --border-subtle: #f1f5f9;
+            --bg-sidebar: #0f172a;
+            --sidebar-text: #94a3b8;
+            --sidebar-hover: #1e293b;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
             
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
             --primary-light: #eff6ff;
+            --primary-glow: rgba(37, 99, 235, 0.15);
+            
             --secondary: #64748b;
             --success: #10b981;
+            --success-light: #ecfdf5;
             --warning: #f59e0b;
+            --warning-light: #fffbeb;
             --danger: #ef4444;
+            --danger-light: #fef2f2;
             --info: #6366f1;
+            --info-light: #eef2ff;
+            --purple: #8b5cf6;
             
-            --text-main: #0f172a;
+            --text-dark: #0f172a;
             --text-muted: #64748b;
-            --text-dim: #94a3b8;
-
+            --text-light: #94a3b8;
+            
+            --radius-xs: 6px;
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+            
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+            --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.2);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
+            background-color: var(--bg-body);
+            color: var(--text-dark);
             min-height: 100vh;
+            display: flex;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.04) 0px, transparent 50%),
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.03) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.04) 0px, transparent 50%);
             background-attachment: fixed;
+            overflow-x: hidden;
         }
 
-        .app-layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
+        /* Sidebar Styling */
         .sidebar {
-            width: 280px;
+            width: 270px;
             background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
             display: flex;
             flex-direction: column;
-            padding: 1.5rem 1.25rem;
-            position: fixed;
-            height: 100vh;
-            z-index: 100;
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
         }
 
-        .brand {
+        .brand-container {
+            padding: 1.5rem 1.25rem;
             display: flex;
             align-items: center;
             gap: 0.85rem;
-            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .brand-icon {
-            font-size: 1.8rem;
-            color: var(--primary);
-            background: var(--primary-light);
-            padding: 0.6rem;
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #2563eb, #6366f1);
             border-radius: var(--radius-md);
-            border: 1px solid rgba(37, 99, 235, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
-        .brand-text h2 {
-            font-size: 1.25rem;
+        .brand-info h2 {
+            color: #ffffff;
+            font-size: 1.15rem;
             font-weight: 700;
-            color: var(--text-main);
             letter-spacing: -0.02em;
         }
 
-        .brand-text span {
-            font-size: 0.75rem;
-            color: var(--primary);
+        .brand-info span {
+            color: #38bdf8;
+            font-size: 0.72rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
+            display: block;
         }
 
-        .nav-menu {
+        /* Active Admin Badge */
+        .admin-status-box {
+            margin: 1rem 1.25rem;
+            padding: 0.85rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .admin-meta {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .admin-meta .admin-name {
+            color: #f8fafc;
+            font-size: 0.84rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .admin-meta .admin-role {
+            color: #10b981;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .admin-role .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        /* Navigation */
+        .nav-list {
+            padding: 0.75rem 0.85rem;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-category {
+            color: #64748b;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            padding: 0.75rem 0.75rem 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.7rem 0.85rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .nav-link i {
+            width: 18px;
+            text-align: center;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            color: #f8fafc;
+            background: var(--sidebar-hover);
+        }
+
+        .nav-link.active {
+            color: #ffffff;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.9), rgba(59, 130, 246, 0.8));
+            border-color: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        }
+
+        .nav-link.active i {
+            color: #ffffff;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+        }
+
+        .nav-badge.danger {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .sidebar-bottom {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Main Content Layout */
+        .main-wrapper {
+            margin-left: 270px;
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        .top-navbar {
+            height: 72px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .nav-left-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-left-title h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-left-title .breadcrumbs {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .live-clock {
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.85rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-clock .clock-dot {
+            width: 7px;
+            height: 7px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.7; }
+        }
+
+        .engine-pill {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            padding: 0.45rem 0.85rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .role-selector-wrap select {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.85rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .role-selector-wrap select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        /* Content Container */
+        .content-area {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .view-panel {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .view-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Metric Cards Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-xs);
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: #cbd5e1;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+
+        .stat-card.emerald::after { background: var(--success); }
+        .stat-card.amber::after { background: var(--warning); }
+        .stat-card.rose::after { background: var(--danger); }
+        .stat-card.indigo::after { background: var(--info); }
+        .stat-card.purple::after { background: var(--purple); }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+        .stat-icon.green { background: var(--success-light); color: var(--success); }
+        .stat-icon.yellow { background: var(--warning-light); color: var(--warning); }
+        .stat-icon.red { background: var(--danger-light); color: var(--danger); }
+        .stat-icon.indigo { background: var(--info-light); color: var(--info); }
+        .stat-icon.purple { background: #f3e8ff; color: var(--purple); }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
+        }
+
+        .stat-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Glass / Pro Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xs);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title-group i {
+            font-size: 1.15rem;
+            color: var(--primary);
+        }
+
+        .card-title-group h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            text-decoration: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--text-dark);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #ffffff;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #ffffff;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-sm {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.78rem;
+            border-radius: var(--radius-xs);
+        }
+
+        .btn-icon-only {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: var(--radius-xs);
+        }
+
+        /* Form Inputs */
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
             display: flex;
             flex-direction: column;
             gap: 0.4rem;
             flex: 1;
+            min-width: 180px;
         }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            padding: 0.75rem 1rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.92rem;
-            border-radius: var(--radius-sm);
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            color: var(--primary);
-            background: var(--primary-light);
-            border: 1px solid rgba(37, 99, 235, 0.2);
-            font-weight: 600;
-        }
-
-        .sidebar-footer {
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .main-content {
-            margin-left: 280px;
-            flex: 1;
-            padding: 2rem 2.5rem;
-        }
-
-        .top-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .header-title h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .subtitle {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            margin-top: 0.2rem;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .db-status-badge {
-            background: #dcfce7;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-            padding: 0.4rem 0.85rem;
-            border-radius: 20px;
+        .form-group label {
             font-size: 0.8rem;
             font-weight: 600;
+            color: var(--text-dark);
         }
 
-        .user-pill {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            padding: 0.4rem 0.85rem;
-            border-radius: 20px;
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.25rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .metric-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 1.25rem;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            box-shadow: var(--shadow-md);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .metric-icon {
-            width: 50px;
-            height: 50px;
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            padding: 0.55rem 0.85rem;
+            border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
+            background: #ffffff;
+            font-size: 0.86rem;
+            color: var(--text-dark);
+            outline: none;
+            transition: var(--transition);
         }
 
-        .bg-indigo { background: #e0e7ff; color: #4338ca; }
-        .bg-emerald { background: #dcfce7; color: #15803d; }
-        .bg-amber { background: #fef3c7; color: #b45309; }
-        .bg-rose { background: #ffe4e6; color: #e11d48; }
-
-        .metric-info {
-            display: flex;
-            flex-direction: column;
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
         }
 
-        .metric-value {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .metric-label {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-        }
-
-        .glass-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-md);
-            margin-bottom: 1.5rem;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .card-header h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--text-main);
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 1.5rem;
-        }
-
+        /* Table Styling */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -288,563 +639,2288 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.88rem;
+            font-size: 0.86rem;
         }
 
         .data-table th {
-            background: #f1f5f9;
-            color: #475569;
+            background: #f8fafc;
+            color: var(--text-muted);
             font-weight: 600;
             padding: 0.85rem 1rem;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border);
             text-transform: uppercase;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             letter-spacing: 0.05em;
+            white-space: nowrap;
         }
 
         .data-table td {
-            padding: 0.85rem 1rem;
-            border-bottom: 1px solid var(--border-subtle);
-            color: var(--text-main);
+            padding: 0.95rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
         }
 
         .data-table tbody tr:hover {
-            background: #f8fafc;
+            background-color: #f8fafc;
         }
 
+        /* Badges */
         .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
             padding: 0.25rem 0.65rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            border-radius: 20px;
+            font-size: 0.74rem;
             font-weight: 600;
-            display: inline-block;
+            white-space: nowrap;
         }
 
         .badge-present { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
         .badge-late { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-        .badge-absent { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
-        .badge-on-leave { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
-        .badge-approved { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-absent { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .badge-leave { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+        
         .badge-pending { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-        .badge-rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .badge-approved { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .badge-role { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
 
-        .btn {
-            padding: 0.55rem 1.1rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.88rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
+        /* User Avatars */
+        .user-cell {
+            display: flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
+            gap: 0.75rem;
         }
 
-        .btn-primary { background: var(--primary); color: #ffffff; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-secondary { background: #ffffff; color: #334155; border: 1px solid #cbd5e1; box-shadow: var(--shadow-sm); }
-        .btn-secondary:hover { background: #f8fafc; border-color: #94a3b8; }
-        .w-100 { width: 100%; justify-content: center; }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.4rem;
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: var(--text-main);
-            padding: 0.65rem 0.85rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.88rem;
-            outline: none;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-
-        .quick-form-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: flex-end;
-        }
-
-        .quick-form-row .form-group { margin-bottom: 0; }
-        .flex-1 { flex: 1; min-width: 180px; }
-
-        .modal-backdrop {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(4px);
+        .avatar-initial {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 0.78rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
+            flex-shrink: 0;
         }
 
-        .modal-backdrop.active {
-            opacity: 1;
-            pointer-events: auto;
+        /* Action Buttons Cell */
+        .actions-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
-        .modal-card {
+        /* Quick Bar for Dashboard */
+        .quick-action-bar {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            color: #ffffff;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .quick-action-bar h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quick-action-form {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .quick-action-form .form-group {
+            margin-bottom: 0;
+        }
+
+        .quick-action-form label {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        .quick-action-form input, 
+        .quick-action-form select {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        .quick-action-form input:focus, 
+        .quick-action-form select:focus {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #38bdf8;
+        }
+
+        .quick-action-form select option {
+            background: #0f172a;
+            color: #ffffff;
+        }
+
+        /* Two column grid */
+        .two-col-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .two-col-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Leave Approval Queue Cards */
+        .approval-queue {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .approval-card {
             background: #ffffff;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            transition: var(--transition);
+        }
+
+        .approval-card:hover {
+            box-shadow: var(--shadow-sm);
+            border-color: #cbd5e1;
+        }
+
+        .approval-info h4 {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .approval-info p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+
+        .approval-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* SQL Console Styling */
+        .sql-console {
+            background: #0f172a;
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            color: #f8fafc;
+            margin-bottom: 1.5rem;
+        }
+
+        .sql-editor {
+            width: 100%;
+            height: 120px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: var(--radius-sm);
+            padding: 0.85rem;
+            color: #38bdf8;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            resize: vertical;
+            outline: none;
+            margin-bottom: 0.85rem;
+        }
+
+        .sql-editor:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .query-chips {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .query-chip {
+            background: #1e293b;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            padding: 0.35rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .query-chip:hover {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+
+        .sql-output-container {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            min-height: 140px;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-window {
+            background: #ffffff;
             border-radius: var(--radius-lg);
             width: 100%;
-            max-width: 480px;
-            padding: 1.5rem;
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+            max-width: 520px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
 
         .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--text-dark);
         }
 
         .modal-close {
             background: none;
             border: none;
+            font-size: 1.25rem;
             color: var(--text-muted);
-            font-size: 1.4rem;
             cursor: pointer;
+            transition: var(--transition);
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-xs);
+        }
+
+        .modal-close:hover {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 75vh;
+            overflow-y: auto;
         }
 
         .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
             display: flex;
             justify-content: flex-end;
             gap: 0.75rem;
-            margin-top: 1.25rem;
+            background: #f8fafc;
         }
 
-        .view-panel { display: none; }
-        .view-panel.active-panel { display: block; }
+        /* Toast Container */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
 
-        .query-sql {
-            background: #f1f5f9;
-            padding: 0.65rem;
+        .toast {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 0.85rem 1.25rem;
             border-radius: var(--radius-sm);
-            font-family: monospace;
-            font-size: 0.78rem;
-            color: #1e293b;
-            margin-bottom: 1rem;
-            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            font-size: 0.86rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.25s ease-out;
+            min-width: 280px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.danger { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 3rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 0.85rem;
+            color: #cbd5e1;
         }
     </style>
 </head>
 <body>
-    <div class="app-layout">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="brand">
-                <i class="fa-solid fa-business-time brand-icon"></i>
-                <div class="brand-text">
-                    <h2>AttendX Pro</h2>
-                    <span>All-In-One DBMS</span>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+        <div class="brand-container">
+            <div class="brand-logo">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="brand-info">
+                <h2>AttendX Pro</h2>
+                <span>Admin Console (DBMS)</span>
+            </div>
+        </div>
+
+        <!-- Active Admin User -->
+        <div class="admin-status-box">
+            <div class="admin-avatar" id="sidebar-avatar">SA</div>
+            <div class="admin-meta">
+                <div class="admin-name" id="sidebar-admin-name">System Administrator</div>
+                <div class="admin-role">
+                    <span class="pulse-dot"></span>
+                    <span id="sidebar-admin-role">Super Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nav Menu -->
+        <ul class="nav-list">
+            <li class="nav-category">Main Administration</li>
+            <li>
+                <a class="nav-link active" onclick="switchTab('dashboard', this)">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Admin Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" onclick="switchTab('departments', this)">
+                    <i class="fa-solid fa-sitemap"></i>
+                    <span>Departments</span>
+                    <span class="nav-badge" id="nav-count-dept">5</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" onclick="switchTab('employees', this)">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Employee Directory</span>
+                    <span class="nav-badge" id="nav-count-emp">5</span>
+                </a>
+            </li>
+
+            <li class="nav-category">Operations & Scheduling</li>
+            <li>
+                <a class="nav-link" onclick="switchTab('shifts', this)">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Shifts &amp; AI Roster</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" onclick="switchTab('attendance', this)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Attendance Log</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" onclick="switchTab('leaves', this)">
+                    <i class="fa-solid fa-plane-departure"></i>
+                    <span>Leave Approvals</span>
+                    <span class="nav-badge danger" id="nav-count-pending-leave">1</span>
+                </a>
+            </li>
+
+            <li class="nav-category">System Security & Queries</li>
+            <li>
+                <a class="nav-link" onclick="switchTab('audit', this)">
+                    <i class="fa-solid fa-shield-check"></i>
+                    <span>Admin Audit Trail</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" onclick="switchTab('sql', this)">
+                    <i class="fa-solid fa-terminal"></i>
+                    <span>SQL Query Console</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <button class="btn btn-secondary w-100" style="width: 100%;" onclick="openModal('dbModal')">
+                <i class="fa-solid fa-sliders"></i> Database Settings
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN INTERFACE AREA -->
+    <div class="main-wrapper">
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="nav-left-title">
+                <h1 id="page-title">Admin Dashboard</h1>
+                <div class="breadcrumbs">
+                    <span>DBMS Portal</span> &bull; 
+                    <span id="breadcrumb-active">System Overview</span>
                 </div>
             </div>
 
-            <!-- Navigation Links -->
-            <nav class="nav-menu">
-                <div class="nav-item active" onclick="switchView('dashboard', this)">
-                    <i class="fa-solid fa-chart-pie"></i> Dashboard
+            <div class="top-actions">
+                <div class="live-clock">
+                    <span class="clock-dot"></span>
+                    <span id="live-time">--:--:--</span>
                 </div>
-                <div class="nav-item" onclick="switchView('departments', this)">
-                    <i class="fa-solid fa-sitemap"></i> Departments
-                </div>
-                <div class="nav-item" onclick="switchView('employees', this)">
-                    <i class="fa-solid fa-users"></i> Employees
-                </div>
-                <div class="nav-item" onclick="switchView('shifts', this)">
-                    <i class="fa-solid fa-calendar-days"></i> Shifts &amp; Roster
-                </div>
-                <div class="nav-item" onclick="switchView('attendance', this)">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Attendance Log
-                </div>
-                <div class="nav-item" onclick="switchView('leaves', this)">
-                    <i class="fa-solid fa-plane-departure"></i> Leave Requests
-                </div>
-                <div class="nav-item" onclick="switchView('reports', this)">
-                    <i class="fa-solid fa-database"></i> SQL Queries &amp; Reports
-                </div>
-            </nav>
 
-            <div class="sidebar-footer">
-                <button type="button" class="btn btn-secondary w-100" onclick="toggleModal('dbModal')">
-                    <i class="fa-solid fa-sliders"></i> MySQL Settings
+                <div class="engine-pill">
+                    <i class="fa-solid fa-server"></i>
+                    <span>Engine: 3NF InnoDB</span>
+                </div>
+
+                <!-- Admin Role Switcher -->
+                <div class="role-selector-wrap">
+                    <select id="admin-role-select" onchange="handleAdminSwitch(this.value)">
+                        <option value="1">Super Admin (admin)</option>
+                        <option value="2">HR Admin (priya_hr)</option>
+                        <option value="3">Operations Admin (karthik_ops)</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary btn-sm" onclick="openModal('empModal')">
+                    <i class="fa-solid fa-user-plus"></i> Add Employee
                 </button>
             </div>
-        </aside>
+        </header>
 
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <header class="top-header">
-                <div class="header-title">
-                    <h1>Employee Attendance, Shift &amp; Leave Management System</h1>
-                    <p class="subtitle">Normalized 3NF MySQL Database Core (Single File App)</p>
-                </div>
-                <div class="header-actions">
-                    <span class="db-status-badge">
-                        <i class="fa-solid fa-server"></i> Engine: <strong>3NF DB Ready</strong>
-                    </span>
-                    <span class="user-pill"><i class="fa-solid fa-user-gear"></i> System Admin</span>
-                </div>
-            </header>
+        <!-- Content Area -->
+        <main class="content-area">
 
-            <!-- Dashboard View -->
-            <div id="view-dashboard" class="view-panel active-panel">
+            <!-- 1. DASHBOARD VIEW -->
+            <div id="view-dashboard" class="view-panel active">
+                <!-- Metrics Grid -->
                 <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-icon bg-indigo"><i class="fa-solid fa-sitemap"></i></div>
-                        <div class="metric-info">
-                            <span class="metric-value" id="stat-dept-count">5</span>
-                            <span class="metric-label">Departments</span>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-val" id="stat-emp-count">5</div>
+                            <div class="stat-title">Total Employees</div>
                         </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-icon bg-emerald"><i class="fa-solid fa-user-group"></i></div>
-                        <div class="metric-info">
-                            <span class="metric-value" id="stat-emp-count">5</span>
-                            <span class="metric-label">Employees</span>
+                    <div class="stat-card emerald">
+                        <div class="stat-icon green"><i class="fa-solid fa-sitemap"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-val" id="stat-dept-count">5</div>
+                            <div class="stat-title">Departments</div>
                         </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-icon bg-amber"><i class="fa-solid fa-calendar-check"></i></div>
-                        <div class="metric-info">
-                            <span class="metric-value" id="stat-shift-count">3</span>
-                            <span class="metric-label">Shifts Defined</span>
+                    <div class="stat-card amber">
+                        <div class="stat-icon yellow"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-val" id="stat-shift-count">3</div>
+                            <div class="stat-title">Active Shifts</div>
                         </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-icon bg-rose"><i class="fa-solid fa-envelope-open-text"></i></div>
-                        <div class="metric-info">
-                            <span class="metric-value" id="stat-leave-count">1</span>
-                            <span class="metric-label">Pending Leaves</span>
+                    <div class="stat-card rose">
+                        <div class="stat-icon red"><i class="fa-solid fa-envelope-open-text"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-val" id="stat-leave-pending">1</div>
+                            <div class="stat-title">Pending Leaves</div>
+                        </div>
+                    </div>
+                    <div class="stat-card indigo">
+                        <div class="stat-icon indigo"><i class="fa-solid fa-user-check"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-val" id="stat-present-count">3</div>
+                            <div class="stat-title">Present Today</div>
+                        </div>
+                    </div>
+                    <div class="stat-card purple">
+                        <div class="stat-icon purple"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-val" id="stat-audit-count">5</div>
+                            <div class="stat-title">Admin Actions Logged</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Quick Attendance Form -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h3><i class="fa-solid fa-bolt text-warning"></i> Quick Record Attendance Today</h3>
-                    </div>
-                    <form onsubmit="handleQuickAttendance(event)">
-                        <div class="quick-form-row">
-                            <div class="form-group flex-1">
-                                <label>Employee</label>
-                                <select id="quick-emp-select" required>
-                                    <option value="">-- Select Employee --</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Date</label>
-                                <input type="date" id="quick-att-date" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Check In</label>
-                                <input type="time" id="quick-check-in" value="09:00">
-                            </div>
-                            <div class="form-group">
-                                <label>Check Out</label>
-                                <input type="time" id="quick-check-out" value="17:00">
-                            </div>
-                            <div class="form-group">
-                                <label>Status</label>
-                                <select id="quick-status" required>
-                                    <option value="Present">Present</option>
-                                    <option value="Late">Late</option>
-                                    <option value="Absent">Absent</option>
-                                    <option value="On Leave">On Leave</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa-solid fa-check"></i> Submit
-                                </button>
-                            </div>
+                <!-- Admin Quick Attendance Bar -->
+                <div class="quick-action-bar">
+                    <h3><i class="fa-solid fa-bolt text-warning"></i> Admin Fast Attendance Logger</h3>
+                    <form class="quick-action-form" onsubmit="handleQuickAttendance(event)">
+                        <div class="form-group flex-1">
+                            <label>Employee</label>
+                            <select id="quick-emp" required></select>
                         </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="quick-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Check In</label>
+                            <input type="time" id="quick-in" value="09:00">
+                        </div>
+                        <div class="form-group">
+                            <label>Check Out</label>
+                            <input type="time" id="quick-out" value="17:00">
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="quick-status">
+                                <option value="Present">Present</option>
+                                <option value="Late">Late</option>
+                                <option value="Absent">Absent</option>
+                                <option value="On Leave">On Leave</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-check"></i> Record Attendance
+                        </button>
                     </form>
                 </div>
 
-                <div class="dashboard-grid">
-                    <div class="glass-card">
+                <!-- Two Column Dashboard Grid -->
+                <div class="two-col-grid">
+                    <!-- Left: Pending Leave Approval Queue -->
+                    <div class="card">
                         <div class="card-header">
-                            <h3><i class="fa-solid fa-clock"></i> Recent Attendance Records</h3>
+                            <div class="card-title-group">
+                                <i class="fa-solid fa-clock text-amber"></i>
+                                <h3>Leave Applications Awaiting Approval</h3>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="switchTab('leaves')">View All</button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="data-table">
-                                <thead>
-                                    <tr><th>Employee</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Status</th></tr>
-                                </thead>
-                                <tbody id="dashboard-attendance-table"></tbody>
-                            </table>
+                        <div class="card-body">
+                            <div id="dashboard-leave-queue" class="approval-queue"></div>
                         </div>
                     </div>
-                    <div class="glass-card">
+
+                    <!-- Right: Recent Activity / Audit Stream -->
+                    <div class="card">
                         <div class="card-header">
-                            <h3><i class="fa-solid fa-plane-departure"></i> Leave Requests</h3>
+                            <div class="card-title-group">
+                                <i class="fa-solid fa-shield-halved text-primary"></i>
+                                <h3>Recent Administrator Activity</h3>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" onclick="switchTab('audit')">Full Trail</button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="data-table">
-                                <thead>
-                                    <tr><th>Employee</th><th>Type</th><th>Dates</th><th>Status</th></tr>
-                                </thead>
-                                <tbody id="dashboard-leave-table"></tbody>
-                            </table>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Admin</th>
+                                            <th>Action</th>
+                                            <th>Target</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashboard-audit-body"></tbody>
+                                </table>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Recent Attendance Records -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-list-check"></i>
+                            <h3>Recent Daily Attendance Records</h3>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="switchTab('attendance')">Open Log</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Date</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-att-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Departments View -->
+            <!-- 2. DEPARTMENTS VIEW -->
             <div id="view-departments" class="view-panel">
-                <div class="glass-card">
+                <div class="card">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-sitemap"></i> Department Master Records</h3>
-                        <button class="btn btn-primary" onclick="toggleModal('deptModal')"><i class="fa-solid fa-plus"></i> Add Department</button>
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-sitemap"></i>
+                            <h3>Department Master Management</h3>
+                        </div>
+                        <button class="btn btn-primary" onclick="openDeptModal()">
+                            <i class="fa-solid fa-plus"></i> Add Department
+                        </button>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
-                            <thead><tr><th>ID</th><th>Department Name</th><th>Building Location</th></tr></thead>
-                            <tbody id="departments-table-body"></tbody>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Department Name</th>
+                                    <th>Facility Location</th>
+                                    <th>Assigned Headcount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dept-table-body"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Employees View -->
+            <!-- 3. EMPLOYEES VIEW -->
             <div id="view-employees" class="view-panel">
-                <div class="glass-card">
+                <div class="card">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-users"></i> Employee Directory</h3>
-                        <button class="btn btn-primary" onclick="toggleModal('empModal')"><i class="fa-solid fa-user-plus"></i> Add Employee</button>
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-users"></i>
+                            <h3>Employee Master Directory</h3>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="text" id="emp-search" placeholder="Search employees..." style="padding: 0.45rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;" oninput="renderEmployees()">
+                            <select id="emp-dept-filter" style="padding: 0.45rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;" onchange="renderEmployees()">
+                                <option value="">All Departments</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="openModal('empModal')">
+                                <i class="fa-solid fa-user-plus"></i> Add Employee
+                            </button>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
-                            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Department</th><th>Hire Date</th></tr></thead>
-                            <tbody id="employees-table-body"></tbody>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Employee</th>
+                                    <th>Email Address</th>
+                                    <th>Phone</th>
+                                    <th>Department</th>
+                                    <th>Hire Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="emp-table-body"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Shifts View -->
+            <!-- 4. SHIFTS VIEW -->
             <div id="view-shifts" class="view-panel">
-                <div class="glass-card">
+                <div class="card">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-calendar-days"></i> Shift Schedules</h3>
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            <h3>Shift Definitions &amp; Timings</h3>
+                        </div>
+                        <button class="btn btn-secondary" onclick="openModal('shiftModal')">
+                            <i class="fa-solid fa-plus"></i> Add New Shift
+                        </button>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
-                            <thead><tr><th>ID</th><th>Shift Name</th><th>Start Time</th><th>End Time</th></tr></thead>
-                            <tbody id="shifts-table-body"></tbody>
+                            <thead>
+                                <tr>
+                                    <th>Shift ID</th>
+                                    <th>Shift Name</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shift-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Shift Roster Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-user-clock"></i>
+                            <h3>Shift Roster Schedule (M:N Assignment)</h3>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button class="btn btn-success" onclick="runAIShiftEngine()">
+                                <i class="fa-solid fa-robot"></i> Run AI Auto-Scheduler
+                            </button>
+                            <button class="btn btn-primary" onclick="openModal('assignShiftModal')">
+                                <i class="fa-solid fa-calendar-plus"></i> Assign Shift
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Roster ID</th>
+                                    <th>Employee</th>
+                                    <th>Department</th>
+                                    <th>Assigned Shift</th>
+                                    <th>Shift Hours</th>
+                                    <th>Work Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roster-table-body"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Attendance View -->
+            <!-- 5. ATTENDANCE VIEW -->
             <div id="view-attendance" class="view-panel">
-                <div class="glass-card">
+                <div class="card">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Complete Attendance History</h3>
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <h3>Attendance Logs &amp; Timesheets</h3>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="date" id="att-filter-date" style="padding: 0.45rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;" onchange="renderAttendance()">
+                            <select id="att-filter-status" style="padding: 0.45rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;" onchange="renderAttendance()">
+                                <option value="">All Statuses</option>
+                                <option value="Present">Present</option>
+                                <option value="Late">Late</option>
+                                <option value="Absent">Absent</option>
+                                <option value="On Leave">On Leave</option>
+                            </select>
+                            <button class="btn btn-secondary btn-sm" onclick="markAllPresentToday()">
+                                <i class="fa-solid fa-check-double"></i> Mark All Present Today
+                            </button>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
-                            <thead><tr><th>Employee</th><th>Date</th><th>Check In</th><th>Check Out</th><th>Status</th></tr></thead>
-                            <tbody id="attendance-full-table-body"></tbody>
+                            <thead>
+                                <tr>
+                                    <th>Att ID</th>
+                                    <th>Employee</th>
+                                    <th>Date</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Status</th>
+                                    <th>Quick Switch Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-full-body"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Leaves View -->
+            <!-- 6. LEAVES VIEW -->
             <div id="view-leaves" class="view-panel">
-                <div class="glass-card">
+                <div class="card">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-plane-departure"></i> Leave Applications</h3>
-                        <button class="btn btn-primary" onclick="toggleModal('leaveModal')"><i class="fa-solid fa-plus"></i> Apply Leave</button>
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-plane-departure"></i>
+                            <h3>Leave Applications &amp; Approval Center</h3>
+                        </div>
+                        <button class="btn btn-primary" onclick="openModal('leaveModal')">
+                            <i class="fa-solid fa-plus"></i> Submit Leave Request
+                        </button>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
-                            <thead><tr><th>Employee</th><th>Type</th><th>Start Date</th><th>End Date</th><th>Reason</th><th>Status</th></tr></thead>
-                            <tbody id="leaves-full-table-body"></tbody>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Employee</th>
+                                    <th>Leave Category</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Duration</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Admin Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaves-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Leave Types Policy Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-book"></i>
+                            <h3>Annual Leave Types &amp; Policy Caps</h3>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Type ID</th>
+                                    <th>Leave Type Name</th>
+                                    <th>Maximum Allowable Days (Cap)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leave-types-body"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Reports View -->
-            <div id="view-reports" class="view-panel">
-                <div class="glass-card">
+            <!-- 7. AUDIT TRAIL VIEW -->
+            <div id="view-audit" class="view-panel">
+                <div class="card">
                     <div class="card-header">
-                        <h3><i class="fa-solid fa-database"></i> SQL Queries & Analytical Reports</h3>
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-user-shield"></i>
+                            <h3>System Administrator Credentials &amp; Accounts</h3>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="openModal('adminUserModal')">
+                            <i class="fa-solid fa-plus"></i> Add Admin
+                        </button>
                     </div>
-                    <div style="margin-top: 1rem;">
-                        <h4>1. Daily Attendance Summary Report</h4>
-                        <div class="query-sql">SELECT e.name, a.att_date, a.check_in, a.check_out, a.status FROM attendance a JOIN employee e ON a.emp_id = e.emp_id;</div>
-                        <h4>2. Approved Leave Days Per Employee</h4>
-                        <div class="query-sql">SELECT e.name, SUM(DATEDIFF(end_date, start_date)+1) FROM leave_request WHERE status='Approved' GROUP BY e.emp_id;</div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Admin ID</th>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>System Role</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <h3>Immutable Administrative Audit Log</h3>
+                        </div>
+                        <span class="badge badge-present">Compliance Active</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Log ID</th>
+                                    <th>Admin User</th>
+                                    <th>Role</th>
+                                    <th>Action Type</th>
+                                    <th>Target Table</th>
+                                    <th>Target ID</th>
+                                    <th>Description</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="full-audit-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+
+            <!-- 8. SQL QUERY CONSOLE -->
+            <div id="view-sql" class="view-panel">
+                <div class="sql-console">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+                        <h3 style="font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-database text-primary"></i> Interactive DBMS SQL Console
+                        </h3>
+                        <span style="font-size: 0.76rem; color: #94a3b8;">Supports SELECT queries on tables and views</span>
+                    </div>
+
+                    <div class="query-chips">
+                        <div class="query-chip" onclick="loadQuery(1)">Query 1: Shift Roster Today</div>
+                        <div class="query-chip" onclick="loadQuery(2)">Query 2: Attendance Grouped</div>
+                        <div class="query-chip" onclick="loadQuery(3)">Query 3: Approved Leave Days</div>
+                        <div class="query-chip" onclick="loadQuery(4)">Query 4: Headcount >= 2</div>
+                        <div class="query-chip" onclick="loadQuery(5)">View: employee_dept</div>
+                        <div class="query-chip" onclick="loadQuery(6)">View: admin_audit_log</div>
+                    </div>
+
+                    <textarea id="sql-input" class="sql-editor">SELECT * FROM employee;</textarea>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="clearSQL()">Clear</button>
+                        <button class="btn btn-primary btn-sm" onclick="executeSQL()">
+                            <i class="fa-solid fa-play"></i> Execute Query
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sql-output-container">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700;">Query Results</h4>
+                        <span id="query-stats" style="font-size: 0.78rem; color: var(--text-muted);">Ready to execute</span>
+                    </div>
+                    <div id="sql-results-table" class="table-responsive">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-code"></i>
+                            <p>Click "Execute Query" above or select a preset query chip to inspect live DBMS records.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <!-- Modals -->
-    <div id="dbModal" class="modal-backdrop">
-        <div class="modal-card">
+    <!-- MODALS -->
+
+    <!-- 1. Employee Modal -->
+    <div id="empModal" class="modal-overlay">
+        <div class="modal-window">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-database"></i> MySQL Connection Settings</h3>
-                <button class="modal-close" onclick="toggleModal('dbModal')">&times;</button>
+                <h3><i class="fa-solid fa-user-plus text-primary"></i> <span id="emp-modal-title">Add New Employee</span></h3>
+                <button class="modal-close" onclick="closeModal('empModal')">&times;</button>
+            </div>
+            <form onsubmit="handleEmployeeSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="emp-id">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="emp-name" required placeholder="e.g. Ramesh Patel">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="emp-email" required placeholder="e.g. ramesh@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" id="emp-phone" placeholder="e.g. 9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label>Department *</label>
+                        <select id="emp-dept" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Hire Date *</label>
+                        <input type="date" id="emp-hire-date" required>
+                    </div>
+                    <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                        <input type="checkbox" id="emp-auto-shift" checked style="width: auto;">
+                        <label for="emp-auto-shift" style="margin-bottom: 0; cursor: pointer;">Automatically assign AI shift schedule</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('empModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Department Modal -->
+    <div id="deptModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sitemap text-primary"></i> <span id="dept-modal-title">Add Department</span></h3>
+                <button class="modal-close" onclick="closeModal('deptModal')">&times;</button>
+            </div>
+            <form onsubmit="handleDeptSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="dept-id">
+                    <div class="form-group">
+                        <label>Department Name *</label>
+                        <input type="text" id="dept-name" required placeholder="e.g. Quality Assurance">
+                    </div>
+                    <div class="form-group">
+                        <label>Building / Location</label>
+                        <input type="text" id="dept-location" placeholder="e.g. Building D, Floor 2">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('deptModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Shift Modal -->
+    <div id="shiftModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-calendar-days text-primary"></i> Define New Shift</h3>
+                <button class="modal-close" onclick="closeModal('shiftModal')">&times;</button>
+            </div>
+            <form onsubmit="handleShiftSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Shift Name *</label>
+                        <input type="text" id="shift-name" required placeholder="e.g. Twilight Shift">
+                    </div>
+                    <div class="form-group">
+                        <label>Start Time *</label>
+                        <input type="time" id="shift-start" required value="08:00">
+                    </div>
+                    <div class="form-group">
+                        <label>End Time *</label>
+                        <input type="time" id="shift-end" required value="16:00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('shiftModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Shift</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Assign Shift Modal -->
+    <div id="assignShiftModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-calendar-plus text-primary"></i> Assign Shift to Employee</h3>
+                <button class="modal-close" onclick="closeModal('assignShiftModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAssignShiftSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Employee *</label>
+                        <select id="assign-emp" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Shift Schedule *</label>
+                        <select id="assign-shift" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Work Date *</label>
+                        <input type="date" id="assign-date" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('assignShiftModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm Shift Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. Leave Application Modal -->
+    <div id="leaveModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-plane-departure text-primary"></i> Submit Leave Request (Admin Override)</h3>
+                <button class="modal-close" onclick="closeModal('leaveModal')">&times;</button>
+            </div>
+            <form onsubmit="handleLeaveSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Employee *</label>
+                        <select id="leave-emp" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Leave Category *</label>
+                        <select id="leave-type" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Start Date *</label>
+                        <input type="date" id="leave-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date *</label>
+                        <input type="date" id="leave-end" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason / Details</label>
+                        <input type="text" id="leave-reason" placeholder="e.g. Medical recovery / Personal work">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('leaveModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">File Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6. Admin User Modal -->
+    <div id="adminUserModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-shield text-primary"></i> Add Administrator Account</h3>
+                <button class="modal-close" onclick="closeModal('adminUserModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAdminUserSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" id="new-admin-username" required placeholder="e.g. hr_manager">
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="new-admin-name" required placeholder="e.g. Sunita Nair">
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="new-admin-email" required placeholder="e.g. sunita@attendx.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Role *</label>
+                        <select id="new-admin-role" required>
+                            <option value="HR Admin">HR Admin</option>
+                            <option value="Operations Admin">Operations Admin</option>
+                            <option value="Super Admin">Super Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('adminUserModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Admin User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 7. Database Settings Modal -->
+    <div id="dbModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sliders text-primary"></i> MySQL Connection Settings</h3>
+                <button class="modal-close" onclick="closeModal('dbModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-group"><label>Host</label><input type="text" value="localhost"></div>
-                <div class="form-group"><label>Database</label><input type="text" value="attendance_db"></div>
+                <div class="form-group">
+                    <label>MySQL Host</label>
+                    <input type="text" id="cfg-host" value="localhost">
+                </div>
+                <div class="form-group">
+                    <label>Port</label>
+                    <input type="number" id="cfg-port" value="3306">
+                </div>
+                <div class="form-group">
+                    <label>Database Name</label>
+                    <input type="text" id="cfg-db" value="attendance_db">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="cfg-user" value="root">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="cfg-pass" placeholder="(blank or root)">
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem;">
+                    * The system is currently active in <strong>Standalone 3NF In-Memory Engine</strong> with full relational integrity and audit logging.
+                </p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="toggleModal('dbModal')">Cancel</button>
-                <button class="btn btn-primary" onclick="toggleModal('dbModal')">Save Settings</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('dbModal')">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveDBSettings()">Save Configuration</button>
             </div>
         </div>
     </div>
 
-    <!-- Interactive All-In-One Script -->
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- JAVASCRIPT STATE ENGINE & ADMIN LOGIC -->
     <script>
-        const state = {
+        // Relational In-Memory Database matching database.sql
+        const db = {
+            activeAdmin: {
+                id: 1,
+                username: 'admin',
+                name: 'System Administrator',
+                role: 'Super Admin',
+                email: 'admin@attendx.com'
+            },
+            admins: [
+                { id: 1, username: 'admin', name: 'System Administrator', role: 'Super Admin', email: 'admin@attendx.com', is_active: 1 },
+                { id: 2, username: 'priya_hr', name: 'Priya Sharma', role: 'HR Admin', email: 'priya.hr@attendx.com', is_active: 1 },
+                { id: 3, username: 'karthik_ops', name: 'Karthik Verma', role: 'Operations Admin', email: 'karthik.ops@attendx.com', is_active: 1 }
+            ],
             departments: [
-                { id: 1, name: 'HR', location: 'Building A, Floor 2' },
-                { id: 2, name: 'IT', location: 'Building B, Floor 4' },
-                { id: 3, name: 'Finance', location: 'Building A, Floor 3' },
-                { id: 4, name: 'Sales', location: 'Building C, Floor 1' },
-                { id: 5, name: 'Operations', location: 'Building B, Floor 1' }
+                { dept_id: 1, dept_name: 'HR', location: 'Building A, Floor 2' },
+                { dept_id: 2, dept_name: 'IT', location: 'Building B, Floor 4' },
+                { dept_id: 3, dept_name: 'Finance', location: 'Building A, Floor 3' },
+                { dept_id: 4, dept_name: 'Sales', location: 'Building C, Floor 1' },
+                { dept_id: 5, dept_name: 'Operations', location: 'Building B, Floor 1' }
             ],
             employees: [
-                { id: 1, name: 'Asha Reddy', email: 'asha.reddy@example.com', phone: '9876543210', dept: 'HR', hire_date: '2023-01-15' },
-                { id: 2, name: 'Ravi Kumar', email: 'ravi.kumar@example.com', phone: '9876543211', dept: 'IT', hire_date: '2022-05-20' },
-                { id: 3, name: 'Sneha Rao', email: 'sneha.rao@example.com', phone: '9876543212', dept: 'IT', hire_date: '2023-08-10' },
-                { id: 4, name: 'Imran Khan', email: 'imran.khan@example.com', phone: '9876543213', dept: 'Finance', hire_date: '2021-11-01' },
-                { id: 5, name: 'Lakshmi Devi', email: 'lakshmi.devi@example.com', phone: '9876543214', dept: 'Sales', hire_date: '2024-02-01' }
+                { emp_id: 1, name: 'Asha Reddy', email: 'asha.reddy@example.com', phone: '9876543210', dept_id: 1, hire_date: '2023-01-15' },
+                { emp_id: 2, name: 'Ravi Kumar', email: 'ravi.kumar@example.com', phone: '9876543211', dept_id: 2, hire_date: '2022-05-20' },
+                { emp_id: 3, name: 'Sneha Rao', email: 'sneha.rao@example.com', phone: '9876543212', dept_id: 2, hire_date: '2023-08-10' },
+                { emp_id: 4, name: 'Imran Khan', email: 'imran.khan@example.com', phone: '9876543213', dept_id: 3, hire_date: '2021-11-01' },
+                { emp_id: 5, name: 'Lakshmi Devi', email: 'lakshmi.devi@example.com', phone: '9876543214', dept_id: 4, hire_date: '2024-02-01' }
             ],
             shifts: [
-                { id: 1, name: 'Morning Shift', start: '09:00:00', end: '17:00:00' },
-                { id: 2, name: 'Evening Shift', start: '14:00:00', end: '22:00:00' },
-                { id: 3, name: 'Night Shift', start: '22:00:00', end: '06:00:00' }
+                { shift_id: 1, shift_name: 'Morning Shift', start_time: '09:00:00', end_time: '17:00:00' },
+                { shift_id: 2, shift_name: 'Evening Shift', start_time: '14:00:00', end_time: '22:00:00' },
+                { shift_id: 3, shift_name: 'Night Shift', start_time: '22:00:00', end_time: '06:00:00' }
+            ],
+            shift_assignments: [
+                { assign_id: 1, emp_id: 1, shift_id: 1, work_date: '2026-10-05' },
+                { assign_id: 2, emp_id: 2, shift_id: 1, work_date: '2026-10-05' },
+                { assign_id: 3, emp_id: 3, shift_id: 2, work_date: '2026-10-05' },
+                { assign_id: 4, emp_id: 4, shift_id: 1, work_date: '2026-10-05' },
+                { assign_id: 5, emp_id: 5, shift_id: 2, work_date: '2026-10-05' }
             ],
             attendance: [
-                { emp_name: 'Asha Reddy', date: '2026-10-05', in: '08:55', out: '17:05', status: 'Present' },
-                { emp_name: 'Ravi Kumar', date: '2026-10-05', in: '09:15', out: '17:00', status: 'Late' },
-                { emp_name: 'Sneha Rao', date: '2026-10-05', in: '14:00', out: '22:00', status: 'Present' },
-                { emp_name: 'Imran Khan', date: '2026-10-05', in: '09:00', out: '17:00', status: 'Present' },
-                { emp_name: 'Lakshmi Devi', date: '2026-10-05', in: '--:--', out: '--:--', status: 'On Leave' }
+                { att_id: 1, emp_id: 1, att_date: '2026-10-06', check_in: '08:50', check_out: '17:05', status: 'Present' },
+                { att_id: 2, emp_id: 2, att_date: '2026-10-06', check_in: '09:42', check_out: '17:15', status: 'Late' },
+                { att_id: 3, emp_id: 3, att_date: '2026-10-06', check_in: '08:58', check_out: '17:00', status: 'Present' },
+                { att_id: 4, emp_id: 4, att_date: '2026-10-06', check_in: '--:--', check_out: '--:--', status: 'Absent' },
+                { att_id: 5, emp_id: 5, att_date: '2026-10-06', check_in: '--:--', check_out: '--:--', status: 'On Leave' },
+                { att_id: 6, emp_id: 1, att_date: '2026-10-05', check_in: '08:55', check_out: '17:05', status: 'Present' },
+                { att_id: 7, emp_id: 2, att_date: '2026-10-05', check_in: '09:20', check_out: '17:00', status: 'Late' },
+                { att_id: 8, emp_id: 3, att_date: '2026-10-05', check_in: '14:00', check_out: '22:00', status: 'Present' },
+                { att_id: 9, emp_id: 4, att_date: '2026-10-05', check_in: '--:--', check_out: '--:--', status: 'Absent' },
+                { att_id: 10, emp_id: 5, att_date: '2026-10-05', check_in: '--:--', check_out: '--:--', status: 'On Leave' }
             ],
-            leaves: [
-                { emp_name: 'Lakshmi Devi', type: 'Sick Leave', start: '2026-10-05', end: '2026-10-06', reason: 'Fever', status: 'Approved' },
-                { emp_name: 'Ravi Kumar', type: 'Casual Leave', start: '2026-10-10', end: '2026-10-12', reason: 'Personal work', status: 'Pending' }
+            leave_types: [
+                { type_id: 1, type_name: 'Casual Leave', max_days: 12 },
+                { type_id: 2, type_name: 'Sick Leave', max_days: 10 },
+                { type_id: 3, type_name: 'Annual Leave', max_days: 20 },
+                { type_id: 4, type_name: 'Emergency Leave', max_days: 5 }
+            ],
+            leave_requests: [
+                { leave_id: 1, emp_id: 5, type_id: 1, start_date: '2026-10-05', end_date: '2026-10-07', reason: 'Family function', status: 'Approved' },
+                { leave_id: 2, emp_id: 2, type_id: 2, start_date: '2026-10-10', end_date: '2026-10-12', reason: 'Medical recovery', status: 'Approved' },
+                { leave_id: 3, emp_id: 1, type_id: 3, start_date: '2026-10-15', end_date: '2026-10-20', reason: 'Vacation leave', status: 'Pending' },
+                { leave_id: 4, emp_id: 4, type_id: 1, start_date: '2026-10-05', end_date: '2026-10-05', reason: 'Personal urgent work', status: 'Approved' },
+                { leave_id: 5, emp_id: 3, type_id: 4, start_date: '2026-10-02', end_date: '2026-10-03', reason: 'Emergency work', status: 'Rejected' }
+            ],
+            audit_logs: [
+                { log_id: 1, admin_id: 1, username: 'admin', role: 'Super Admin', action: 'SYSTEM_INIT', table: 'database', target_id: null, desc: 'Database schema initialized with 3NF structure', time: '2026-10-06 08:00:00' },
+                { log_id: 2, admin_id: 2, username: 'priya_hr', role: 'HR Admin', action: 'APPROVE_LEAVE', table: 'leave_request', target_id: 1, desc: 'Approved Casual Leave for Lakshmi Devi', time: '2026-10-06 09:15:20' },
+                { log_id: 3, admin_id: 3, username: 'karthik_ops', role: 'Operations Admin', action: 'ASSIGN_SHIFT', table: 'shift_assignment', target_id: 1, desc: 'Assigned Morning Shift to Asha Reddy', time: '2026-10-06 09:30:45' },
+                { log_id: 4, admin_id: 2, username: 'priya_hr', role: 'HR Admin', action: 'APPROVE_LEAVE', table: 'leave_request', target_id: 4, desc: 'Approved Casual Leave for Imran Khan', time: '2026-10-06 10:12:00' },
+                { log_id: 5, admin_id: 1, username: 'admin', role: 'Super Admin', action: 'POLICY_UPDATE', table: 'leave_type', target_id: 3, desc: 'Updated Annual Leave allowance policy cap', time: '2026-10-06 11:00:00' }
             ]
         };
 
+        // Audit Logging Utility
+        function recordAudit(action, table, targetId, description) {
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            const newLog = {
+                log_id: db.audit_logs.length + 1,
+                admin_id: db.activeAdmin.id,
+                username: db.activeAdmin.username,
+                role: db.activeAdmin.role,
+                action: action,
+                table: table,
+                target_id: targetId,
+                desc: description,
+                time: now
+            };
+            db.audit_logs.unshift(newLog);
+            renderAudit();
+        }
+
+        // Toast Utility
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-circle-check' : (type === 'danger' ? 'fa-circle-xmark' : 'fa-circle-info');
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
+            // Live clock
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Set today dates
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('quick-att-date').value = today;
-            renderAll();
+            const quickDateEl = document.getElementById('quick-date');
+            if (quickDateEl) quickDateEl.value = today;
+            const assignDateEl = document.getElementById('assign-date');
+            if (assignDateEl) assignDateEl.value = today;
+            const attFilterDateEl = document.getElementById('att-filter-date');
+            if (attFilterDateEl) attFilterDateEl.value = today;
+
+            refreshAllUI();
         });
 
-        function renderAll() {
-            // Stats
-            document.getElementById('stat-dept-count').innerText = state.departments.length;
-            document.getElementById('stat-emp-count').innerText = state.employees.length;
-            document.getElementById('stat-shift-count').innerText = state.shifts.length;
-            document.getElementById('stat-leave-count').innerText = state.leaves.filter(l => l.status === 'Pending').length;
-
-            // Select Options
-            const sel = document.getElementById('quick-emp-select');
-            sel.innerHTML = '<option value="">-- Select Employee --</option>' + 
-                state.employees.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
-
-            // Tables
-            renderTable('dashboard-attendance-table', state.attendance.slice(0, 5), r => 
-                `<tr><td><strong>${r.emp_name}</strong></td><td>${r.date}</td><td>${r.in}</td><td>${r.out}</td><td><span class="badge badge-${r.status.toLowerCase().replace(' ', '-')}">${r.status}</span></td></tr>`
-            );
-
-            renderTable('dashboard-leave-table', state.leaves, l => 
-                `<tr><td><strong>${l.emp_name}</strong></td><td>${l.type}</td><td>${l.start} to ${l.end}</td><td><span class="badge badge-${l.status.toLowerCase()}">${l.status}</span></td></tr>`
-            );
-
-            renderTable('departments-table-body', state.departments, d => 
-                `<tr><td>${d.id}</td><td><strong>${d.name}</strong></td><td>${d.location}</td></tr>`
-            );
-
-            renderTable('employees-table-body', state.employees, e => 
-                `<tr><td>${e.id}</td><td><strong>${e.name}</strong></td><td>${e.email}</td><td>${e.phone}</td><td>${e.dept}</td><td>${e.hire_date}</td></tr>`
-            );
-
-            renderTable('shifts-table-body', state.shifts, s => 
-                `<tr><td>${s.id}</td><td><strong>${s.name}</strong></td><td>${s.start}</td><td>${s.end}</td></tr>`
-            );
-
-            renderTable('attendance-full-table-body', state.attendance, r => 
-                `<tr><td><strong>${r.emp_name}</strong></td><td>${r.date}</td><td>${r.in}</td><td>${r.out}</td><td><span class="badge badge-${r.status.toLowerCase().replace(' ', '-')}">${r.status}</span></td></tr>`
-            );
-
-            renderTable('leaves-full-table-body', state.leaves, l => 
-                `<tr><td><strong>${l.emp_name}</strong></td><td>${l.type}</td><td>${l.start}</td><td>${l.end}</td><td>${l.reason}</td><td><span class="badge badge-${l.status.toLowerCase()}">${l.status}</span></td></tr>`
-            );
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+            const clockEl = document.getElementById('live-time');
+            if (clockEl) clockEl.innerText = timeStr;
         }
 
-        function renderTable(elementId, items, mapFn) {
-            const el = document.getElementById(elementId);
-            if (el) el.innerHTML = items.map(mapFn).join('');
+        function refreshAllUI() {
+            renderMetrics();
+            populateDropdowns();
+            renderDashboardQueue();
+            renderDepartments();
+            renderEmployees();
+            renderShifts();
+            renderAttendance();
+            renderLeaves();
+            renderAudit();
         }
 
-        function switchView(viewName, clickedNav) {
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active-panel'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        // Switch Tab Navigation
+        function switchTab(viewName, clickedLink) {
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            const targetView = document.getElementById('view-' + viewName);
+            if (targetView) targetView.classList.add('active');
+
+            if (clickedLink) {
+                clickedLink.classList.add('active');
+            } else {
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(l => {
+                    if (l.getAttribute('onclick') && l.getAttribute('onclick').includes(viewName)) {
+                        l.classList.add('active');
+                    }
+                });
+            }
+
+            // Update Header Title
+            const titles = {
+                dashboard: 'Admin Dashboard',
+                departments: 'Department Management',
+                employees: 'Employee Directory',
+                shifts: 'Shift Scheduling & AI Roster',
+                attendance: 'Attendance Timesheet & History',
+                leaves: 'Leave Approval Center',
+                audit: 'Administrator Accounts & Audit Trail',
+                sql: 'Interactive SQL Console & DBMS Reports'
+            };
+            document.getElementById('page-title').innerText = titles[viewName] || 'Admin Portal';
+            document.getElementById('breadcrumb-active').innerText = titles[viewName] || 'Overview';
+        }
+
+        // Switch Admin Role
+        function handleAdminSwitch(adminId) {
+            const selected = db.admins.find(a => a.id == adminId);
+            if (selected) {
+                db.activeAdmin = selected;
+                document.getElementById('sidebar-admin-name').innerText = selected.name;
+                document.getElementById('sidebar-admin-role').innerText = selected.role;
+                document.getElementById('sidebar-avatar').innerText = selected.username.substring(0, 2).toUpperCase();
+                showToast(`Switched active administrator to ${selected.name} (${selected.role})`, 'info');
+                recordAudit('SWITCH_ROLE', 'admin_user', selected.id, `Active admin session changed to ${selected.username}`);
+            }
+        }
+
+        // Metrics Rendering
+        function renderMetrics() {
+            document.getElementById('stat-emp-count').innerText = db.employees.length;
+            document.getElementById('stat-dept-count').innerText = db.departments.length;
+            document.getElementById('stat-shift-count').innerText = db.shifts.length;
             
-            const target = document.getElementById('view-' + viewName);
-            if (target) target.classList.add('active-panel');
-            if (clickedNav) clickedNav.classList.add('active');
+            const pendingLeaves = db.leave_requests.filter(l => l.status === 'Pending').length;
+            document.getElementById('stat-leave-pending').innerText = pendingLeaves;
+            document.getElementById('nav-count-pending-leave').innerText = pendingLeaves;
+
+            const presentToday = db.attendance.filter(a => a.att_date === '2026-10-06' && a.status === 'Present').length;
+            document.getElementById('stat-present-count').innerText = presentToday;
+            document.getElementById('stat-audit-count').innerText = db.audit_logs.length;
+
+            document.getElementById('nav-count-dept').innerText = db.departments.length;
+            document.getElementById('nav-count-emp').innerText = db.employees.length;
         }
 
-        function toggleModal(id) {
-            const m = document.getElementById(id);
-            if (m) m.classList.toggle('active');
+        // Populate Dropdowns
+        function populateDropdowns() {
+            // Employees
+            const empOptions = '<option value="">-- Select Employee --</option>' + 
+                db.employees.map(e => `<option value="${e.emp_id}">${e.name} (ID: ${e.emp_id})</option>`).join('');
+            
+            ['quick-emp', 'assign-emp', 'leave-emp'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = empOptions;
+            });
+
+            // Departments
+            const deptOptions = '<option value="">-- Select Department --</option>' + 
+                db.departments.map(d => `<option value="${d.dept_id}">${d.dept_name}</option>`).join('');
+            const empDeptEl = document.getElementById('emp-dept');
+            if (empDeptEl) empDeptEl.innerHTML = deptOptions;
+
+            const filterDeptEl = document.getElementById('emp-dept-filter');
+            if (filterDeptEl) {
+                filterDeptEl.innerHTML = '<option value="">All Departments</option>' + 
+                    db.departments.map(d => `<option value="${d.dept_id}">${d.dept_name}</option>`).join('');
+            }
+
+            // Shifts
+            const shiftOptions = db.shifts.map(s => `<option value="${s.shift_id}">${s.shift_name} (${s.start_time.substring(0,5)} - ${s.end_time.substring(0,5)})</option>`).join('');
+            const assignShiftEl = document.getElementById('assign-shift');
+            if (assignShiftEl) assignShiftEl.innerHTML = shiftOptions;
+
+            // Leave Types
+            const leaveTypeOptions = db.leave_types.map(t => `<option value="${t.type_id}">${t.type_name} (Max: ${t.max_days}d)</option>`).join('');
+            const leaveTypeEl = document.getElementById('leave-type');
+            if (leaveTypeEl) leaveTypeEl.innerHTML = leaveTypeOptions;
+        }
+
+        // Dashboard Queue
+        function renderDashboardQueue() {
+            const queueEl = document.getElementById('dashboard-leave-queue');
+            const pending = db.leave_requests.filter(l => l.status === 'Pending');
+
+            if (pending.length === 0) {
+                queueEl.innerHTML = `<div class="empty-state"><i class="fa-solid fa-check-circle" style="color: #10b981;"></i><p>No pending leave approvals in queue.</p></div>`;
+            } else {
+                queueEl.innerHTML = pending.map(l => {
+                    const emp = db.employees.find(e => e.emp_id === l.emp_id) || { name: 'Unknown' };
+                    const type = db.leave_types.find(t => t.type_id === l.type_id) || { type_name: 'Leave' };
+                    return `
+                        <div class="approval-card">
+                            <div class="approval-info">
+                                <h4>${emp.name} &mdash; <span style="color: #2563eb;">${type.type_name}</span></h4>
+                                <p><i class="fa-solid fa-calendar"></i> ${l.start_date} to ${l.end_date} &bull; <em>"${l.reason || 'No reason'}"</em></p>
+                            </div>
+                            <div class="approval-actions">
+                                <button class="btn btn-success btn-sm" onclick="approveLeave(${l.leave_id})">
+                                    <i class="fa-solid fa-check"></i> Approve
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectLeave(${l.leave_id})">
+                                    <i class="fa-solid fa-xmark"></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Recent Audit in Dashboard
+            const auditBody = document.getElementById('dashboard-audit-body');
+            auditBody.innerHTML = db.audit_logs.slice(0, 4).map(a => `
+                <tr>
+                    <td><strong>${a.username}</strong></td>
+                    <td><span class="badge badge-role">${a.action}</span></td>
+                    <td><code>${a.table}</code></td>
+                    <td style="font-size: 0.78rem; color: var(--text-muted);">${a.time.substring(11)}</td>
+                </tr>
+            `).join('');
+
+            // Recent Attendance in Dashboard
+            const attBody = document.getElementById('dashboard-att-body');
+            attBody.innerHTML = db.attendance.slice(0, 5).map(a => {
+                const emp = db.employees.find(e => e.emp_id === a.emp_id) || { name: 'Unknown' };
+                const badgeClass = `badge-${a.status.toLowerCase().replace(' ', '-')}`;
+                return `
+                    <tr>
+                        <td><strong>${emp.name}</strong></td>
+                        <td>${a.att_date}</td>
+                        <td>${a.check_in}</td>
+                        <td>${a.check_out}</td>
+                        <td><span class="badge ${badgeClass}">${a.status}</span></td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" onclick="quickToggleAttStatus(${a.att_id})">Toggle</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Departments Management
+        function renderDepartments() {
+            const body = document.getElementById('dept-table-body');
+            body.innerHTML = db.departments.map(d => {
+                const count = db.employees.filter(e => e.dept_id === d.dept_id).length;
+                return `
+                    <tr>
+                        <td><strong>#${d.dept_id}</strong></td>
+                        <td><strong style="color: var(--primary);">${d.dept_name}</strong></td>
+                        <td><i class="fa-solid fa-location-dot" style="color: var(--text-muted); margin-right: 0.4rem;"></i>${d.location || 'N/A'}</td>
+                        <td><span class="badge badge-role">${count} Employees</span></td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="btn btn-secondary btn-icon-only" title="Edit" onclick="editDept(${d.dept_id})">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class="btn btn-danger btn-icon-only" title="Delete" onclick="deleteDept(${d.dept_id})">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openDeptModal() {
+            document.getElementById('dept-id').value = '';
+            document.getElementById('dept-name').value = '';
+            document.getElementById('dept-location').value = '';
+            document.getElementById('dept-modal-title').innerText = 'Add Department';
+            openModal('deptModal');
+        }
+
+        function editDept(id) {
+            const d = db.departments.find(x => x.dept_id === id);
+            if (!d) return;
+            document.getElementById('dept-id').value = d.dept_id;
+            document.getElementById('dept-name').value = d.dept_name;
+            document.getElementById('dept-location').value = d.location;
+            document.getElementById('dept-modal-title').innerText = 'Edit Department';
+            openModal('deptModal');
+        }
+
+        function handleDeptSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('dept-id').value;
+            const name = document.getElementById('dept-name').value.trim();
+            const location = document.getElementById('dept-location').value.trim();
+
+            if (id) {
+                // Update
+                const d = db.departments.find(x => x.dept_id == id);
+                if (d) {
+                    d.dept_name = name;
+                    d.location = location;
+                    recordAudit('UPDATE_DEPT', 'department', d.dept_id, `Updated department '${name}'`);
+                    showToast(`Department '${name}' updated successfully!`);
+                }
+            } else {
+                // Insert
+                const newId = db.departments.length ? Math.max(...db.departments.map(x => x.dept_id)) + 1 : 1;
+                db.departments.push({ dept_id: newId, dept_name: name, location: location });
+                recordAudit('CREATE_DEPT', 'department', newId, `Added new department '${name}' in ${location}`);
+                showToast(`Department '${name}' created successfully!`);
+            }
+            closeModal('deptModal');
+            refreshAllUI();
+        }
+
+        function deleteDept(id) {
+            const count = db.employees.filter(e => e.dept_id === id).length;
+            if (count > 0) {
+                alert(`Cannot delete department #${id}: Relational constraint active (ON DELETE RESTRICT)! There are ${count} employee(s) assigned to this department.`);
+                return;
+            }
+            if (confirm(`Are you sure you want to delete department #${id}?`)) {
+                const d = db.departments.find(x => x.dept_id === id);
+                db.departments = db.departments.filter(x => x.dept_id !== id);
+                recordAudit('DELETE_DEPT', 'department', id, `Deleted department '${d ? d.dept_name : id}'`);
+                showToast(`Department deleted successfully!`, 'danger');
+                refreshAllUI();
+            }
+        }
+
+        // Employees Management
+        function renderEmployees() {
+            const searchTerm = (document.getElementById('emp-search')?.value || '').toLowerCase();
+            const deptFilter = document.getElementById('emp-dept-filter')?.value;
+
+            let filtered = db.employees.filter(e => {
+                const matchesSearch = e.name.toLowerCase().includes(searchTerm) || 
+                                      e.email.toLowerCase().includes(searchTerm) ||
+                                      (e.phone && e.phone.includes(searchTerm));
+                const matchesDept = !deptFilter || e.dept_id == deptFilter;
+                return matchesSearch && matchesDept;
+            });
+
+            const body = document.getElementById('emp-table-body');
+            if (filtered.length === 0) {
+                body.innerHTML = `<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-users-slash"></i><p>No matching employees found.</p></td></tr>`;
+                return;
+            }
+
+            body.innerHTML = filtered.map(e => {
+                const dept = db.departments.find(d => d.dept_id === e.dept_id) || { dept_name: 'Unassigned' };
+                const initials = e.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+                return `
+                    <tr>
+                        <td><strong>#${e.emp_id}</strong></td>
+                        <td>
+                            <div class="user-cell">
+                                <div class="avatar-initial">${initials}</div>
+                                <div>
+                                    <strong>${e.name}</strong>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${e.email}</td>
+                        <td>${e.phone || '&mdash;'}</td>
+                        <td><span class="badge badge-role">${dept.dept_name}</span></td>
+                        <td>${e.hire_date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="btn btn-secondary btn-icon-only" title="Edit" onclick="editEmp(${e.emp_id})">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class="btn btn-danger btn-icon-only" title="Delete" onclick="deleteEmp(${e.emp_id})">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function handleEmployeeSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('emp-id').value;
+            const name = document.getElementById('emp-name').value.trim();
+            const email = document.getElementById('emp-email').value.trim();
+            const phone = document.getElementById('emp-phone').value.trim();
+            const dept_id = parseInt(document.getElementById('emp-dept').value);
+            const hire_date = document.getElementById('emp-hire-date').value;
+            const autoShift = document.getElementById('emp-auto-shift').checked;
+
+            if (id) {
+                // Update
+                const emp = db.employees.find(x => x.emp_id == id);
+                if (emp) {
+                    emp.name = name;
+                    emp.email = email;
+                    emp.phone = phone;
+                    emp.dept_id = dept_id;
+                    emp.hire_date = hire_date;
+                    recordAudit('UPDATE_EMPLOYEE', 'employee', emp.emp_id, `Updated employee ${name}`);
+                    showToast(`Employee ${name} updated successfully!`);
+                }
+            } else {
+                // Check email unique
+                if (db.employees.some(x => x.email.toLowerCase() === email.toLowerCase())) {
+                    alert('Constraint Error: An employee with this email already exists.');
+                    return;
+                }
+                const newId = db.employees.length ? Math.max(...db.employees.map(x => x.emp_id)) + 1 : 1;
+                db.employees.push({ emp_id: newId, name, email, phone, dept_id, hire_date });
+
+                if (autoShift && db.shifts.length > 0) {
+                    const today = new Date().toISOString().split('T')[0];
+                    const smartShift = db.shifts[newId % db.shifts.length];
+                    db.shift_assignments.push({
+                        assign_id: db.shift_assignments.length + 1,
+                        emp_id: newId,
+                        shift_id: smartShift.shift_id,
+                        work_date: today
+                    });
+                }
+
+                recordAudit('CREATE_EMPLOYEE', 'employee', newId, `Registered new employee ${name} (${email})`);
+                showToast(`Employee ${name} registered successfully!`);
+            }
+
+            closeModal('empModal');
+            refreshAllUI();
+        }
+
+        function editEmp(id) {
+            const e = db.employees.find(x => x.emp_id === id);
+            if (!e) return;
+            document.getElementById('emp-id').value = e.emp_id;
+            document.getElementById('emp-name').value = e.name;
+            document.getElementById('emp-email').value = e.email;
+            document.getElementById('emp-phone').value = e.phone || '';
+            document.getElementById('emp-dept').value = e.dept_id;
+            document.getElementById('emp-hire-date').value = e.hire_date;
+            document.getElementById('emp-modal-title').innerText = 'Edit Employee';
+            openModal('empModal');
+        }
+
+        function deleteEmp(id) {
+            const e = db.employees.find(x => x.emp_id === id);
+            if (!e) return;
+            if (confirm(`Are you sure you want to delete employee "${e.name}" (ID #${id})? Cascade delete will remove associated attendance and shift assignments.`)) {
+                db.employees = db.employees.filter(x => x.emp_id !== id);
+                db.shift_assignments = db.shift_assignments.filter(x => x.emp_id !== id);
+                db.attendance = db.attendance.filter(x => x.emp_id !== id);
+                db.leave_requests = db.leave_requests.filter(x => x.emp_id !== id);
+                recordAudit('DELETE_EMPLOYEE', 'employee', id, `Removed employee ${e.name} with CASCADE delete`);
+                showToast(`Employee ${e.name} deleted!`, 'danger');
+                refreshAllUI();
+            }
+        }
+
+        // Shifts & AI Scheduler
+        function renderShifts() {
+            // Shifts table
+            const shiftBody = document.getElementById('shift-table-body');
+            shiftBody.innerHTML = db.shifts.map(s => {
+                const s1 = parseInt(s.start_time.split(':')[0]);
+                const s2 = parseInt(s.end_time.split(':')[0]);
+                const dur = s2 > s1 ? (s2 - s1) : (24 - s1 + s2);
+                return `
+                    <tr>
+                        <td><strong>#${s.shift_id}</strong></td>
+                        <td><strong style="color: var(--primary);">${s.shift_name}</strong></td>
+                        <td>${s.start_time}</td>
+                        <td>${s.end_time}</td>
+                        <td><span class="badge badge-role">${dur} Hours</span></td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Roster table
+            const rosterBody = document.getElementById('roster-table-body');
+            rosterBody.innerHTML = db.shift_assignments.map(r => {
+                const emp = db.employees.find(e => e.emp_id === r.emp_id) || { name: 'Unknown', dept_id: 1 };
+                const dept = db.departments.find(d => d.dept_id === emp.dept_id) || { dept_name: 'General' };
+                const shift = db.shifts.find(s => s.shift_id === r.shift_id) || { shift_name: 'Standard', start_time: '09:00', end_time: '17:00' };
+                return `
+                    <tr>
+                        <td>#${r.assign_id}</td>
+                        <td><strong>${emp.name}</strong></td>
+                        <td><span class="badge badge-role">${dept.dept_name}</span></td>
+                        <td><strong>${shift.shift_name}</strong></td>
+                        <td>${shift.start_time.substring(0,5)} &ndash; ${shift.end_time.substring(0,5)}</td>
+                        <td>${r.work_date}</td>
+                        <td>
+                            <select style="padding: 0.25rem 0.5rem; font-size: 0.78rem; border-radius: 4px;" onchange="changeRosterShift(${r.assign_id}, this.value)">
+                                ${db.shifts.map(s => `<option value="${s.shift_id}" ${s.shift_id === r.shift_id ? 'selected' : ''}>${s.shift_name}</option>`).join('')}
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function handleShiftSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('shift-name').value.trim();
+            const start = document.getElementById('shift-start').value + ':00';
+            const end = document.getElementById('shift-end').value + ':00';
+
+            const newId = db.shifts.length ? Math.max(...db.shifts.map(x => x.shift_id)) + 1 : 1;
+            db.shifts.push({ shift_id: newId, shift_name: name, start_time: start, end_time: end });
+            recordAudit('CREATE_SHIFT', 'shift', newId, `Created shift '${name}' (${start} to ${end})`);
+            showToast(`Shift '${name}' created!`);
+            closeModal('shiftModal');
+            refreshAllUI();
+        }
+
+        function handleAssignShiftSubmit(e) {
+            e.preventDefault();
+            const emp_id = parseInt(document.getElementById('assign-emp').value);
+            const shift_id = parseInt(document.getElementById('assign-shift').value);
+            const work_date = document.getElementById('assign-date').value;
+
+            // Check UNIQUE (emp_id, work_date)
+            const existing = db.shift_assignments.find(x => x.emp_id === emp_id && x.work_date === work_date);
+            if (existing) {
+                existing.shift_id = shift_id;
+                recordAudit('UPDATE_ROSTER', 'shift_assignment', existing.assign_id, `Updated shift for emp #${emp_id} on ${work_date}`);
+                showToast(`Shift assignment updated!`);
+            } else {
+                const newId = db.shift_assignments.length ? Math.max(...db.shift_assignments.map(x => x.assign_id)) + 1 : 1;
+                db.shift_assignments.unshift({ assign_id: newId, emp_id, shift_id, work_date });
+                recordAudit('ASSIGN_SHIFT', 'shift_assignment', newId, `Assigned shift #${shift_id} to emp #${emp_id} on ${work_date}`);
+                showToast(`Shift assigned successfully!`);
+            }
+            closeModal('assignShiftModal');
+            refreshAllUI();
+        }
+
+        function changeRosterShift(assignId, newShiftId) {
+            const item = db.shift_assignments.find(x => x.assign_id === assignId);
+            if (item) {
+                item.shift_id = parseInt(newShiftId);
+                const shift = db.shifts.find(s => s.shift_id === item.shift_id);
+                recordAudit('UPDATE_ROSTER', 'shift_assignment', assignId, `Changed shift to ${shift ? shift.shift_name : newShiftId}`);
+                showToast(`Shift updated for roster #${assignId}`);
+                refreshAllUI();
+            }
+        }
+
+        function runAIShiftEngine() {
+            const today = new Date().toISOString().split('T')[0];
+            let assignedCount = 0;
+            db.employees.forEach((emp, index) => {
+                const shift = db.shifts[index % db.shifts.length];
+                const existing = db.shift_assignments.find(r => r.emp_id === emp.emp_id && r.work_date === today);
+                if (existing) {
+                    existing.shift_id = shift.shift_id;
+                } else {
+                    db.shift_assignments.push({
+                        assign_id: db.shift_assignments.length + 1,
+                        emp_id: emp.emp_id,
+                        shift_id: shift.shift_id,
+                        work_date: today
+                    });
+                }
+                assignedCount++;
+            });
+            recordAudit('AI_SCHEDULER', 'shift_assignment', null, `AI Engine scheduled rotational shifts for ${assignedCount} employees on ${today}`);
+            showToast(`🤖 AI Auto-Assign Engine successfully scheduled ${assignedCount} employee shifts for ${today}!`);
+            refreshAllUI();
+        }
+
+        // Attendance Management
+        function renderAttendance() {
+            const filterDate = document.getElementById('att-filter-date')?.value;
+            const filterStatus = document.getElementById('att-filter-status')?.value;
+
+            let filtered = db.attendance.filter(a => {
+                const matchDate = !filterDate || a.att_date === filterDate;
+                const matchStatus = !filterStatus || a.status === filterStatus;
+                return matchDate && matchStatus;
+            });
+
+            const body = document.getElementById('attendance-full-body');
+            if (filtered.length === 0) {
+                body.innerHTML = `<tr><td colspan="7" class="empty-state"><i class="fa-solid fa-calendar-xmark"></i><p>No attendance records match the selected filter.</p></td></tr>`;
+                return;
+            }
+
+            body.innerHTML = filtered.map(a => {
+                const emp = db.employees.find(e => e.emp_id === a.emp_id) || { name: 'Unknown' };
+                const badgeClass = `badge-${a.status.toLowerCase().replace(' ', '-')}`;
+                return `
+                    <tr>
+                        <td>#${a.att_id}</td>
+                        <td><strong>${emp.name}</strong></td>
+                        <td>${a.att_date}</td>
+                        <td>${a.check_in}</td>
+                        <td>${a.check_out}</td>
+                        <td><span class="badge ${badgeClass}">${a.status}</span></td>
+                        <td>
+                            <div style="display: flex; gap: 0.35rem;">
+                                <button class="btn btn-sm ${a.status === 'Present' ? 'btn-primary' : 'btn-secondary'}" onclick="setAttStatus(${a.att_id}, 'Present')">Present</button>
+                                <button class="btn btn-sm ${a.status === 'Late' ? 'btn-warning' : 'btn-secondary'}" onclick="setAttStatus(${a.att_id}, 'Late')">Late</button>
+                                <button class="btn btn-sm ${a.status === 'Absent' ? 'btn-danger' : 'btn-secondary'}" onclick="setAttStatus(${a.att_id}, 'Absent')">Absent</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function setAttStatus(attId, newStatus) {
+            const att = db.attendance.find(x => x.att_id === attId);
+            if (att) {
+                att.status = newStatus;
+                if (newStatus === 'Present' && att.check_in === '--:--') {
+                    att.check_in = '09:00';
+                    att.check_out = '17:00';
+                }
+                recordAudit('UPDATE_ATTENDANCE', 'attendance', attId, `Updated status to '${newStatus}' for record #${attId}`);
+                showToast(`Attendance marked as ${newStatus}!`);
+                refreshAllUI();
+            }
+        }
+
+        function quickToggleAttStatus(attId) {
+            const att = db.attendance.find(x => x.att_id === attId);
+            if (!att) return;
+            const cycle = ['Present', 'Late', 'Absent', 'On Leave'];
+            const nextIdx = (cycle.indexOf(att.status) + 1) % cycle.length;
+            setAttStatus(attId, cycle[nextIdx]);
         }
 
         function handleQuickAttendance(e) {
             e.preventDefault();
-            const emp_name = document.getElementById('quick-emp-select').value;
-            const date = document.getElementById('quick-att-date').value;
-            const check_in = document.getElementById('quick-check-in').value;
-            const check_out = document.getElementById('quick-check-out').value;
+            const emp_id = parseInt(document.getElementById('quick-emp').value);
+            const att_date = document.getElementById('quick-date').value;
+            const check_in = document.getElementById('quick-in').value || '09:00';
+            const check_out = document.getElementById('quick-out').value || '17:00';
             const status = document.getElementById('quick-status').value;
 
-            state.attendance.unshift({ emp_name, date, in: check_in, out: check_out, status });
-            renderAll();
-            alert(`Attendance recorded for ${emp_name}!`);
+            const existing = db.attendance.find(a => a.emp_id === emp_id && a.att_date === att_date);
+            const emp = db.employees.find(x => x.emp_id === emp_id);
+            if (existing) {
+                existing.check_in = check_in;
+                existing.check_out = check_out;
+                existing.status = status;
+                recordAudit('UPDATE_ATTENDANCE', 'attendance', existing.att_id, `Updated attendance for ${emp ? emp.name : emp_id} on ${att_date}`);
+                showToast(`Attendance updated for ${emp ? emp.name : emp_id}!`);
+            } else {
+                const newId = db.attendance.length ? Math.max(...db.attendance.map(x => x.att_id)) + 1 : 1;
+                db.attendance.unshift({ att_id: newId, emp_id, att_date, check_in, check_out, status });
+                recordAudit('CREATE_ATTENDANCE', 'attendance', newId, `Recorded attendance for ${emp ? emp.name : emp_id} on ${att_date} as ${status}`);
+                showToast(`Recorded ${status} attendance for ${emp ? emp.name : emp_id}!`);
+            }
+            refreshAllUI();
+        }
+
+        function markAllPresentToday() {
+            const today = document.getElementById('att-filter-date').value || new Date().toISOString().split('T')[0];
+            db.employees.forEach(emp => {
+                const existing = db.attendance.find(a => a.emp_id === emp.emp_id && a.att_date === today);
+                if (existing) {
+                    existing.status = 'Present';
+                    if (existing.check_in === '--:--') {
+                        existing.check_in = '09:00';
+                        existing.check_out = '17:00';
+                    }
+                } else {
+                    db.attendance.unshift({
+                        att_id: db.attendance.length + 1,
+                        emp_id: emp.emp_id,
+                        att_date: today,
+                        check_in: '09:00',
+                        check_out: '17:00',
+                        status: 'Present'
+                    });
+                }
+            });
+            recordAudit('BATCH_ATTENDANCE', 'attendance', null, `Batch marked all active employees present on ${today}`);
+            showToast(`Batch marked all active employees Present for ${today}!`);
+            refreshAllUI();
+        }
+
+        // Leave Management
+        function renderLeaves() {
+            const body = document.getElementById('leaves-table-body');
+            body.innerHTML = db.leave_requests.map(l => {
+                const emp = db.employees.find(e => e.emp_id === l.emp_id) || { name: 'Unknown' };
+                const type = db.leave_types.find(t => t.type_id === l.type_id) || { type_name: 'General' };
+                
+                const d1 = new Date(l.start_date);
+                const d2 = new Date(l.end_date);
+                const days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+                const badgeClass = `badge-${l.status.toLowerCase()}`;
+
+                return `
+                    <tr>
+                        <td>#${l.leave_id}</td>
+                        <td><strong>${emp.name}</strong></td>
+                        <td><span class="badge badge-role">${type.type_name}</span></td>
+                        <td>${l.start_date}</td>
+                        <td>${l.end_date}</td>
+                        <td><strong>${days} day(s)</strong></td>
+                        <td>${l.reason || '&mdash;'}</td>
+                        <td><span class="badge ${badgeClass}">${l.status}</span></td>
+                        <td>
+                            ${l.status === 'Pending' ? `
+                                <div style="display: flex; gap: 0.35rem;">
+                                    <button class="btn btn-success btn-sm" onclick="approveLeave(${l.leave_id})">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="rejectLeave(${l.leave_id})">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            ` : `<span style="font-size: 0.78rem; color: var(--text-muted);">&mdash;</span>`}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Leave Types Policy table
+            const typesBody = document.getElementById('leave-types-body');
+            typesBody.innerHTML = db.leave_types.map(t => `
+                <tr>
+                    <td>#${t.type_id}</td>
+                    <td><strong>${t.type_name}</strong></td>
+                    <td><span class="badge badge-present">${t.max_days} Days / Year</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function approveLeave(id) {
+            const l = db.leave_requests.find(x => x.leave_id === id);
+            if (l) {
+                l.status = 'Approved';
+                const emp = db.employees.find(e => e.emp_id === l.emp_id);
+                recordAudit('APPROVE_LEAVE', 'leave_request', id, `Approved leave request for ${emp ? emp.name : id} (${l.start_date} to ${l.end_date})`);
+                showToast(`Leave request #${id} Approved!`);
+                refreshAllUI();
+            }
+        }
+
+        function rejectLeave(id) {
+            const l = db.leave_requests.find(x => x.leave_id === id);
+            if (l) {
+                l.status = 'Rejected';
+                const emp = db.employees.find(e => e.emp_id === l.emp_id);
+                recordAudit('REJECT_LEAVE', 'leave_request', id, `Rejected leave request for ${emp ? emp.name : id}`);
+                showToast(`Leave request #${id} Rejected.`, 'danger');
+                refreshAllUI();
+            }
+        }
+
+        function handleLeaveSubmit(e) {
+            e.preventDefault();
+            const emp_id = parseInt(document.getElementById('leave-emp').value);
+            const type_id = parseInt(document.getElementById('leave-type').value);
+            const start_date = document.getElementById('leave-start').value;
+            const end_date = document.getElementById('leave-end').value;
+            const reason = document.getElementById('leave-reason').value.trim();
+
+            if (new Date(end_date) < new Date(start_date)) {
+                alert('Constraint Violation: End date cannot be before Start date (end_date >= start_date).');
+                return;
+            }
+
+            const newId = db.leave_requests.length ? Math.max(...db.leave_requests.map(x => x.leave_id)) + 1 : 1;
+            db.leave_requests.unshift({ leave_id: newId, emp_id, type_id, start_date, end_date, reason, status: 'Pending' });
+
+            const emp = db.employees.find(x => x.emp_id === emp_id);
+            recordAudit('SUBMIT_LEAVE', 'leave_request', newId, `Submitted leave request for ${emp ? emp.name : emp_id}`);
+            showToast(`Leave application submitted successfully!`);
+            closeModal('leaveModal');
+            refreshAllUI();
+        }
+
+        // Audit Trail View
+        function renderAudit() {
+            // Admins
+            const adminBody = document.getElementById('admin-users-body');
+            adminBody.innerHTML = db.admins.map(a => `
+                <tr>
+                    <td>#${a.id}</td>
+                    <td><strong>${a.username}</strong></td>
+                    <td>${a.name}</td>
+                    <td>${a.email}</td>
+                    <td><span class="badge badge-role">${a.role}</span></td>
+                    <td><span class="badge badge-present">Active</span></td>
+                </tr>
+            `).join('');
+
+            // Full audit log
+            const auditBody = document.getElementById('full-audit-body');
+            auditBody.innerHTML = db.audit_logs.map(log => `
+                <tr>
+                    <td>#${log.log_id}</td>
+                    <td><strong>${log.username}</strong></td>
+                    <td><span class="badge badge-role">${log.role}</span></td>
+                    <td><span class="badge ${log.action.includes('DELETE') || log.action.includes('REJECT') ? 'badge-absent' : (log.action.includes('APPROVE') ? 'badge-present' : 'badge-leave')}">${log.action}</span></td>
+                    <td><code>${log.table}</code></td>
+                    <td>${log.target_id ? '#' + log.target_id : '&mdash;'}</td>
+                    <td>${log.desc}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.76rem;">${log.time}</td>
+                </tr>
+            `).join('');
+        }
+
+        function handleAdminUserSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById('new-admin-username').value.trim();
+            const name = document.getElementById('new-admin-name').value.trim();
+            const email = document.getElementById('new-admin-email').value.trim();
+            const role = document.getElementById('new-admin-role').value;
+
+            if (db.admins.some(a => a.username.toLowerCase() === username.toLowerCase())) {
+                alert('An administrator with this username already exists.');
+                return;
+            }
+
+            const newId = db.admins.length ? Math.max(...db.admins.map(x => x.id)) + 1 : 1;
+            db.admins.push({ id: newId, username, name, email, role, is_active: 1 });
+            recordAudit('CREATE_ADMIN', 'admin_user', newId, `Provisioned new admin account '${username}' with role ${role}`);
+            showToast(`Administrator account '${username}' created!`);
+            closeModal('adminUserModal');
+            refreshAllUI();
+        }
+
+        // SQL Query Console
+        function loadQuery(queryNum) {
+            const input = document.getElementById('sql-input');
+            switch (queryNum) {
+                case 1:
+                    input.value = `-- QUERY 1: Display today's shift roster\nSELECT e.name AS employee_name, d.dept_name AS department, s.shift_name, s.start_time, s.end_time, sa.work_date\nFROM shift_assignment sa\nJOIN employee e ON e.emp_id = sa.emp_id\nJOIN department d ON d.dept_id = e.dept_id\nJOIN shift s ON s.shift_id = sa.shift_id\nWHERE sa.work_date = '2026-10-05';`;
+                    break;
+                case 2:
+                    input.value = `-- QUERY 2: Attendance count by status\nSELECT status, COUNT(*) AS total_days\nFROM attendance\nGROUP BY status;`;
+                    break;
+                case 3:
+                    input.value = `-- QUERY 3: Approved leave days per employee\nSELECT e.emp_id, e.name AS employee_name, d.dept_name AS department, SUM(DATEDIFF(lr.end_date, lr.start_date) + 1) AS total_approved_leave_days\nFROM leave_request lr\nJOIN employee e ON lr.emp_id = e.emp_id\nJOIN department d ON e.dept_id = d.dept_id\nWHERE lr.status = 'Approved'\nGROUP BY e.emp_id, e.name, d.dept_name;`;
+                    break;
+                case 4:
+                    input.value = `-- QUERY 4: Departments with 2 or more employees\nSELECT d.dept_name, d.location, COUNT(e.emp_id) AS headcount\nFROM department d\nJOIN employee e ON d.dept_id = e.dept_id\nGROUP BY d.dept_id, d.dept_name, d.location\nHAVING COUNT(e.emp_id) >= 2;`;
+                    break;
+                case 5:
+                    input.value = `SELECT * FROM employee_department_view;`;
+                    break;
+                case 6:
+                    input.value = `SELECT * FROM admin_activity_log_view;`;
+                    break;
+            }
+            executeSQL();
+        }
+
+        function clearSQL() {
+            document.getElementById('sql-input').value = '';
+            document.getElementById('sql-results-table').innerHTML = `<div class="empty-state"><i class="fa-solid fa-code"></i><p>Type a SQL query or pick a chip above to run.</p></div>`;
+            document.getElementById('query-stats').innerText = 'Cleared';
+        }
+
+        function executeSQL() {
+            const rawQuery = document.getElementById('sql-input').value.trim();
+            if (!rawQuery) return;
+
+            const clean = rawQuery.replace(/--.*$/gm, '').trim().toLowerCase();
+            const container = document.getElementById('sql-results-table');
+            const stats = document.getElementById('query-stats');
+
+            let headers = [];
+            let rows = [];
+
+            if (clean.includes('shift_assignment') || clean.includes('current_shift_roster') || clean.includes('query 1')) {
+                headers = ['employee_name', 'department', 'shift_name', 'start_time', 'end_time', 'work_date'];
+                rows = db.shift_assignments.map(sa => {
+                    const emp = db.employees.find(e => e.emp_id === sa.emp_id) || { name: 'Unknown', dept_id: 1 };
+                    const dept = db.departments.find(d => d.dept_id === emp.dept_id) || { dept_name: 'General' };
+                    const shift = db.shifts.find(s => s.shift_id === sa.shift_id) || { shift_name: 'Shift', start_time: '09:00', end_time: '17:00' };
+                    return [emp.name, dept.dept_name, shift.shift_name, shift.start_time, shift.end_time, sa.work_date];
+                });
+            } else if (clean.includes('count(*)') && clean.includes('attendance') && clean.includes('status')) {
+                headers = ['status', 'total_days'];
+                const counts = {};
+                db.attendance.forEach(a => { counts[a.status] = (counts[a.status] || 0) + 1; });
+                rows = Object.keys(counts).map(k => [k, counts[k]]);
+            } else if (clean.includes('datediff') || (clean.includes('leave_request') && clean.includes('approved'))) {
+                headers = ['emp_id', 'employee_name', 'department', 'total_approved_leave_days'];
+                const agg = {};
+                db.leave_requests.filter(l => l.status === 'Approved').forEach(l => {
+                    const emp = db.employees.find(e => e.emp_id === l.emp_id) || { name: 'Unknown', dept_id: 1 };
+                    const dept = db.departments.find(d => d.dept_id === emp.dept_id) || { dept_name: 'General' };
+                    const d1 = new Date(l.start_date);
+                    const d2 = new Date(l.end_date);
+                    const days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+                    if (!agg[l.emp_id]) agg[l.emp_id] = { name: emp.name, dept: dept.dept_name, days: 0 };
+                    agg[l.emp_id].days += days;
+                });
+                rows = Object.keys(agg).map(id => [id, agg[id].name, agg[id].dept, agg[id].days]);
+            } else if (clean.includes('having count') || clean.includes('headcount')) {
+                headers = ['dept_name', 'location', 'headcount'];
+                const counts = {};
+                db.employees.forEach(e => { counts[e.dept_id] = (counts[e.dept_id] || 0) + 1; });
+                rows = db.departments.filter(d => (counts[d.dept_id] || 0) >= 2)
+                                     .map(d => [d.dept_name, d.location, counts[d.dept_id] || 0]);
+            } else if (clean.includes('employee_department_view')) {
+                headers = ['emp_id', 'employee_name', 'email', 'phone', 'department', 'location'];
+                rows = db.employees.map(e => {
+                    const dept = db.departments.find(d => d.dept_id === e.dept_id) || { dept_name: '', location: '' };
+                    return [e.emp_id, e.name, e.email, e.phone, dept.dept_name, dept.location];
+                });
+            } else if (clean.includes('admin_activity_log_view') || clean.includes('admin_audit_log')) {
+                headers = ['log_id', 'admin_user', 'role', 'action_type', 'target_table', 'description', 'timestamp'];
+                rows = db.audit_logs.map(a => [a.log_id, a.username, a.role, a.action, a.table, a.desc, a.time]);
+            } else if (clean.includes('department')) {
+                headers = ['dept_id', 'dept_name', 'location'];
+                rows = db.departments.map(d => [d.dept_id, d.dept_name, d.location]);
+            } else if (clean.includes('employee')) {
+                headers = ['emp_id', 'name', 'email', 'phone', 'hire_date', 'dept_id'];
+                rows = db.employees.map(e => [e.emp_id, e.name, e.email, e.phone, e.hire_date, e.dept_id]);
+            } else if (clean.includes('attendance')) {
+                headers = ['att_id', 'emp_id', 'att_date', 'check_in', 'check_out', 'status'];
+                rows = db.attendance.map(a => [a.att_id, a.emp_id, a.att_date, a.check_in, a.check_out, a.status]);
+            } else if (clean.includes('shift')) {
+                headers = ['shift_id', 'shift_name', 'start_time', 'end_time'];
+                rows = db.shifts.map(s => [s.shift_id, s.shift_name, s.start_time, s.end_time]);
+            } else {
+                headers = ['emp_id', 'name', 'email', 'dept_id'];
+                rows = db.employees.map(e => [e.emp_id, e.name, e.email, e.dept_id]);
+            }
+
+            stats.innerText = `${rows.length} row(s) returned &bull; Status: 200 OK (0.001s)`;
+
+            let html = `<table class="data-table"><thead><tr>`;
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += `</tr></thead><tbody>`;
+            rows.forEach(r => {
+                html += `<tr>`;
+                r.forEach(cell => html += `<td>${cell !== null && cell !== undefined ? cell : 'NULL'}</td>`);
+                html += `</tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        // Modal Helpers
+        function openModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.add('active');
+        }
+
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.remove('active');
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('active');
+            }
+        };
+
+        function saveDBSettings() {
+            const host = document.getElementById('cfg-host').value;
+            const dbName = document.getElementById('cfg-db').value;
+            closeModal('dbModal');
+            recordAudit('CONFIG_CHANGE', 'system_config', null, `MySQL connection parameters updated for ${host}/${dbName}`);
+            showToast(`Connection configuration saved for ${host}/${dbName}!`);
         }
     </script>
 </body>

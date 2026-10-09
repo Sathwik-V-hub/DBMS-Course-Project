@@ -43,6 +43,16 @@
                 <span class="metric-label">Pending Leaves</span>
             </div>
         </div>
+
+        <div class="metric-card">
+            <div class="metric-icon bg-indigo">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="metric-info">
+                <span class="metric-value">{{ metrics.audit_count if metrics and metrics.audit_count else 0 }}</span>
+                <span class="metric-label">Admin Audit Events</span>
+            </div>
+        </div>
     </div>
 
     <!-- Quick Attendance Entry Widget on Dashboard -->
@@ -173,6 +183,44 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Recent Admin Audit Activity -->
+    <div class="glass-card mt-4">
+        <div class="card-header">
+            <h3><i class="fa-solid fa-shield-halved text-primary"></i> Recent Administrator Activity &amp; Audit Trail</h3>
+            <a href="{{ url_for('audit_logs') }}" class="card-link">View Full Audit Log &rarr;</a>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Admin User</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                        <th>Target Table</th>
+                        <th>Description</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if recent_audit %}
+                        {% for row in recent_audit %}
+                        <tr>
+                            <td><strong>{{ row.username }}</strong></td>
+                            <td><span class="badge badge-info">{{ row.role }}</span></td>
+                            <td><span class="badge badge-warning">{{ row.action_type }}</span></td>
+                            <td><code>{{ row.target_table }}</code></td>
+                            <td>{{ row.description }}</td>
+                            <td><small class="text-muted">{{ row.action_timestamp }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="6" class="text-center text-muted">No recent administrative activity recorded.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

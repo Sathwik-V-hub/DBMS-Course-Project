@@ -18,11 +18,15 @@ USE attendance_db;
 -- ----------------------------------------------------
 -- 2. CLEANUP EXISTING VIEWS & TABLES
 -- ----------------------------------------------------
+DROP VIEW IF EXISTS system_admin_overview;
+DROP VIEW IF EXISTS admin_activity_log_view;
 DROP VIEW IF EXISTS leave_summary;
 DROP VIEW IF EXISTS attendance_summary;
 DROP VIEW IF EXISTS current_shift_roster;
 DROP VIEW IF EXISTS employee_department_view;
 
+DROP TABLE IF EXISTS admin_audit_log;
+DROP TABLE IF EXISTS admin_user;
 DROP TABLE IF EXISTS leave_request;
 DROP TABLE IF EXISTS leave_type;
 DROP TABLE IF EXISTS attendance;
@@ -122,6 +126,34 @@ CREATE TABLE leave_request (
         ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Table 8: admin_user (System Administrator Accounts & Roles)
+CREATE TABLE admin_user (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(80) NOT NULL,
+    email VARCHAR(80) NOT NULL UNIQUE,
+    role ENUM('Super Admin', 'HR Admin', 'Operations Admin') NOT NULL DEFAULT 'HR Admin',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    last_login DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table 9: admin_audit_log (Tracks Administrator Actions & Modifications)
+CREATE TABLE admin_audit_log (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    action_type VARCHAR(50) NOT NULL,
+    target_table VARCHAR(50) NOT NULL,
+    target_id INT,
+    description TEXT,
+    action_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id)
+        REFERENCES admin_user(admin_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ----------------------------------------------------
 -- 4. CREATE INDEXES
 -- ----------------------------------------------------
@@ -129,6 +161,9 @@ CREATE INDEX idx_employee_dept ON employee(dept_id);
 CREATE INDEX idx_leave_request_emp ON leave_request(emp_id);
 CREATE INDEX idx_leave_request_status ON leave_request(status);
 CREATE INDEX idx_leave_request_dates ON leave_request(start_date, end_date);
+CREATE INDEX idx_admin_user_role ON admin_user(role);
+CREATE INDEX idx_audit_admin ON admin_audit_log(admin_id);
+CREATE INDEX idx_audit_action ON admin_audit_log(action_type);
 
 -- ----------------------------------------------------
 -- 5. CREATE VIEWS
@@ -179,6 +214,29 @@ SELECT
 FROM leave_request lr
 JOIN employee e ON lr.emp_id = e.emp_id
 JOIN leave_type lt ON lr.type_id = lt.type_id;
+
+CREATE VIEW admin_activity_log_view AS
+SELECT 
+    al.log_id,
+    au.username AS admin_user,
+    au.full_name AS admin_name,
+    au.role AS admin_role,
+    al.action_type,
+    al.target_table,
+    al.target_id,
+    al.description,
+    al.action_timestamp
+FROM admin_audit_log al
+JOIN admin_user au ON al.admin_id = au.admin_id;
+
+CREATE VIEW system_admin_overview AS
+SELECT 
+    (SELECT COUNT(*) FROM employee) AS total_employees,
+    (SELECT COUNT(*) FROM department) AS total_departments,
+    (SELECT COUNT(*) FROM shift) AS total_shifts,
+    (SELECT COUNT(*) FROM leave_request WHERE status = 'Pending') AS pending_leaves,
+    (SELECT COUNT(*) FROM attendance WHERE status = 'Present') AS total_present_records,
+    (SELECT COUNT(*) FROM admin_user WHERE is_active = 1) AS active_admins;
 
 -- ----------------------------------------------------
 -- 6. SAMPLE DATA INSERTION (SEED)
@@ -234,6 +292,18 @@ INSERT INTO leave_request (leave_id, emp_id, type_id, start_date, end_date, reas
 (4, 4, 1, '2026-10-05', '2026-10-05', 'Personal urgent work', 'Approved'),
 (5, 3, 4, '2026-10-02', '2026-10-03', 'Emergency work', 'Rejected');
 
+INSERT INTO admin_user (admin_id, username, password_hash, full_name, email, role, is_active) VALUES
+(1, 'admin', 'admin123', 'System Administrator', 'admin@attendx.com', 'Super Admin', 1),
+(2, 'priya_hr', 'hrpass123', 'Priya Sharma', 'priya.hr@attendx.com', 'HR Admin', 1),
+(3, 'karthik_ops', 'opspass123', 'Karthik Verma', 'karthik.ops@attendx.com', 'Operations Admin', 1);
+
+INSERT INTO admin_audit_log (log_id, admin_id, action_type, target_table, target_id, description) VALUES
+(1, 1, 'SYSTEM_INIT', 'database', NULL, 'Database schema initialized with 3NF structure and seed data'),
+(2, 2, 'APPROVE_LEAVE', 'leave_request', 1, 'Approved Casual Leave for Lakshmi Devi (2026-10-05 to 2026-10-07)'),
+(3, 3, 'ASSIGN_SHIFT', 'shift_assignment', 1, 'Assigned Morning Shift to Asha Reddy for 2026-10-05'),
+(4, 2, 'APPROVE_LEAVE', 'leave_request', 4, 'Approved Casual Leave for Imran Khan'),
+(5, 1, 'POLICY_UPDATE', 'leave_type', 3, 'Updated Annual Leave allowance policy');
+
 -- ----------------------------------------------------
 -- 7. EASY SELECT QUERIES FOR ALL TABLES
 -- (Use singular table names below!)
@@ -246,6 +316,8 @@ SELECT * FROM shift_assignment;
 SELECT * FROM attendance;
 SELECT * FROM leave_type;
 SELECT * FROM leave_request;
+SELECT * FROM admin_user;
+SELECT * FROM admin_audit_log;
 
 -- ----------------------------------------------------
 -- 8. REQUIRED CORE QUERIES (SECTION 14)
@@ -302,3 +374,5 @@ SELECT * FROM employee_department_view;
 SELECT * FROM current_shift_roster;
 SELECT * FROM attendance_summary;
 SELECT * FROM leave_summary;
+SELECT * FROM admin_activity_log_view;
+SELECT * FROM system_admin_overview;

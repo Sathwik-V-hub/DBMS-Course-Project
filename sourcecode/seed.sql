@@ -63,3 +63,17 @@ INSERT INTO leave_request (leave_id, emp_id, type_id, start_date, end_date, reas
 (3, 1, 3, '2026-10-15', '2026-10-20', 'Vacation leave', 'Pending'),
 (4, 4, 1, '2026-10-05', '2026-10-05', 'Personal urgent work', 'Approved'),
 (5, 3, 4, '2026-10-02', '2026-10-03', 'Emergency work', 'Rejected');
+
+-- 8. Admin Users
+INSERT INTO admin_user (admin_id, username, password_hash, full_name, email, role, is_active) VALUES
+(1, 'admin', 'admin123', 'System Administrator', 'admin@attendx.com', 'Super Admin', 1),
+(2, 'priya_hr', 'hrpass123', 'Priya Sharma', 'priya.hr@attendx.com', 'HR Admin', 1),
+(3, 'karthik_ops', 'opspass123', 'Karthik Verma', 'karthik.ops@attendx.com', 'Operations Admin', 1);
+
+-- 9. Admin Audit Logs
+INSERT INTO admin_audit_log (log_id, admin_id, action_type, target_table, target_id, description) VALUES
+(1, 1, 'SYSTEM_INIT', 'database', NULL, 'Database schema initialized with 3NF structure and seed data'),
+(2, 2, 'APPROVE_LEAVE', 'leave_request', 1, 'Approved Casual Leave for Lakshmi Devi (2026-10-05 to 2026-10-07)'),
+(3, 3, 'ASSIGN_SHIFT', 'shift_assignment', 1, 'Assigned Morning Shift to Asha Reddy for 2026-10-05'),
+(4, 2, 'APPROVE_LEAVE', 'leave_request', 4, 'Approved Casual Leave for Imran Khan'),
+(5, 1, 'POLICY_UPDATE', 'leave_type', 3, 'Updated Annual Leave allowance policy');

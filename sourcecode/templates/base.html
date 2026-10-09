@@ -48,6 +48,9 @@
                 <a href="{{ url_for('reports') }}" class="nav-item {% if request.endpoint == 'reports' %}active{% endif %}">
                     <i class="fa-solid fa-database"></i> SQL Queries &amp; Reports
                 </a>
+                <a href="{{ url_for('audit_logs') }}" class="nav-item {% if request.endpoint == 'audit_logs' %}active{% endif %}">
+                    <i class="fa-solid fa-shield-halved"></i> Admin Audit Trail
+                </a>
             </nav>
 
             <div class="sidebar-footer">

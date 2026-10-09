@@ -8,12 +8,16 @@ CREATE DATABASE IF NOT EXISTS attendance_db;
 USE attendance_db;
 
 -- Drop views in reverse order
+DROP VIEW IF EXISTS system_admin_overview;
+DROP VIEW IF EXISTS admin_activity_log_view;
 DROP VIEW IF EXISTS leave_summary;
 DROP VIEW IF EXISTS attendance_summary;
 DROP VIEW IF EXISTS current_shift_roster;
 DROP VIEW IF EXISTS employee_department_view;
 
 -- Drop tables in reverse foreign key order
+DROP TABLE IF EXISTS admin_audit_log;
+DROP TABLE IF EXISTS admin_user;
 DROP TABLE IF EXISTS leave_request;
 DROP TABLE IF EXISTS leave_type;
 DROP TABLE IF EXISTS attendance;
@@ -109,11 +113,42 @@ CREATE TABLE leave_request (
         ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 8. ADMIN_USER TABLE
+CREATE TABLE admin_user (
+    admin_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(80) NOT NULL,
+    email VARCHAR(80) NOT NULL UNIQUE,
+    role ENUM('Super Admin', 'HR Admin', 'Operations Admin') NOT NULL DEFAULT 'HR Admin',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    last_login DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 9. ADMIN_AUDIT_LOG TABLE
+CREATE TABLE admin_audit_log (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    action_type VARCHAR(50) NOT NULL,
+    target_table VARCHAR(50) NOT NULL,
+    target_id INT,
+    description TEXT,
+    action_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id)
+        REFERENCES admin_user(admin_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- INDEXES
 CREATE INDEX idx_employee_dept ON employee(dept_id);
 CREATE INDEX idx_leave_request_emp ON leave_request(emp_id);
 CREATE INDEX idx_leave_request_status ON leave_request(status);
 CREATE INDEX idx_leave_request_dates ON leave_request(start_date, end_date);
+CREATE INDEX idx_admin_user_role ON admin_user(role);
+CREATE INDEX idx_audit_admin ON admin_audit_log(admin_id);
+CREATE INDEX idx_audit_action ON admin_audit_log(action_type);
 
 -- DATABASE VIEWS
 CREATE VIEW employee_department_view AS
@@ -162,3 +197,26 @@ SELECT
 FROM leave_request lr
 JOIN employee e ON lr.emp_id = e.emp_id
 JOIN leave_type lt ON lr.type_id = lt.type_id;
+
+CREATE VIEW admin_activity_log_view AS
+SELECT 
+    al.log_id,
+    au.username AS admin_user,
+    au.full_name AS admin_name,
+    au.role AS admin_role,
+    al.action_type,
+    al.target_table,
+    al.target_id,
+    al.description,
+    al.action_timestamp
+FROM admin_audit_log al
+JOIN admin_user au ON al.admin_id = au.admin_id;
+
+CREATE VIEW system_admin_overview AS
+SELECT 
+    (SELECT COUNT(*) FROM employee) AS total_employees,
+    (SELECT COUNT(*) FROM department) AS total_departments,
+    (SELECT COUNT(*) FROM shift) AS total_shifts,
+    (SELECT COUNT(*) FROM leave_request WHERE status = 'Pending') AS pending_leaves,
+    (SELECT COUNT(*) FROM attendance WHERE status = 'Present') AS total_present_records,
+    (SELECT COUNT(*) FROM admin_user WHERE is_active = 1) AS active_admins;
